@@ -27,10 +27,10 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include "ais_fsar_flash.h"
-#include "ais_fsar_gyro.h"
-#include "ais_fsar_gyropacket.h"
-#include "ais_fsar_queue.h"
+#include "flash.h"
+#include "gyro.h"
+#include "gyropacket.h"
+#include "queue.h"
 /******************************************************************************
  * PRIVATE TYPEDEF
  ******************************************************************************/
