@@ -27,8 +27,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include "flash.h"
-#include "gyro.h"
+#include "logdata.h"
 #include "gyropacket.h"
 #include "queue.h"
 /******************************************************************************
