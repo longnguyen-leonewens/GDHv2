@@ -25,22 +25,45 @@
  * PRIVATE TYPEDEF
  ******************************************************************************/
 
+/**
+ * @brief Struct for parameter of gyro
+ *
+ */
+typedef struct __Gyro_ParamStruct
+{
+    double axisX;                  /*>! x-axis position */
+    double axisY;                  /*>! y-axis position */
+    double axisZ;                  /*>! z-axis position */
+    double acceX;                  /*>! x-axis acceleration */
+    double acceY;                  /*>! y-axis acceleration */
+    double acceZ;                  /*>! z-axis acceleration */
+    double temp;                   /*>! Temperature in Celcius */
+}Gyro_ParamsTypeDef;
+
 /******************************************************************************
  * PRIVATE CONSTANTS
  ******************************************************************************/
 
-/** @defgroup Gyroscope constants
+/** @defgroup Gyroscope sensor constants
  * @{
  */
-#define FREQUENCY                   (60U)
-#define ACCE                        (9.8)
-#define MAX_GYRO                    (10U)
-#define AVERAGE_TEMPERATURE         (77.5)
-#define OFFSET_TEMPERATURE          (37.5)
+#define DEFAULT_FREQUENCY                      (60U)
+#define GRAVITY_ACCE                           (9.8)
+#define MAX_GYRO                               (10U)
+#define AVG_TEMP                               (77.5)
+#define OFFSET_TEMP                            (37.5)
 /**
  * @}
  */
 
+/** @defgroup Gyroscope simulation thread state
+ * @{
+ */
+#define GYRO_SIMULATION_RUNNING                (1U)
+#define GYRO_SIMULATION_STOPPED                (0U)
+/**
+ * @}
+ */
 /******************************************************************************
  * PRIVATE MACROS
  ******************************************************************************/
@@ -48,97 +71,126 @@
 /******************************************************************************
  * PRIVATE VARIABLES
  ******************************************************************************/
-static ParamGyro_t Gyro_Data;
+static Gyro_ParamsTypeDef gyroData;       /* Struct to hold simulation data */
+static pthread_t          threadGyro;     /* For Gyroscope thread */
+static pthread_mutex_t    mutexGyroData;  /* Mutex for Gyroscope data */
+static bool               isRunning;      /* For controlling the thread */
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
-
+static void *Gyro_Simulation(void* arg);
 /******************************************************************************
  * PRIVATE FUNCTIONS
  ******************************************************************************/
 
-static void *s_Gyro_Simulator(void* arg)
+/**
+ * @brief  Gyroscope imulation thread
+ * @param  arg Argument to the function
+ * @return None
+ */
+static void *Gyro_Simulation(void* arg)
 {
-    ParamGyro_t *gyro = (ParamGyro_t *)arg;
-    double time = 0;
-    double temp = 0;
+    uint32_t simFrequency = DEFAULT_FREQUENCY;
+    double time  = 0;
+    double temp  = 0;
     double alpha = 0;
-
-    while (1)
+    /* Check if frequency is passed as an argument */
+    if (arg != NULL)
     {
-        gyro->gyro_x = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
-        gyro->gyro_y = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
-        gyro->gyro_z = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
-        gyro->acce_x = (double)rand()/RAND_MAX * 2 * ACCE - ACCE;
-        temp = ACCE * ACCE - (gyro->acce_x) * (gyro->acce_x);
-        alpha = 2 * M_PI * FREQUENCY * time;
-        gyro->acce_y = sqrt(temp) * sin(alpha);
-        gyro->acce_z = sqrt(temp) * cos(alpha);
-        gyro->temperature = OFFSET_TEMPERATURE + AVERAGE_TEMPERATURE * sin(alpha);
-        usleep((1.0/FREQUENCY) * 1e6);
-        time = time + 1.0/FREQUENCY;
+        simFrequency = *((uint32_t *)arg);
     }
-
-    return NULL;
-}
-
-void Gyro_Sim_Data_Init(pthread_t gyroThread, ParamGyro_t *data)
-{
-    /* Initialize gyro data */
-    data->gyro_x = 0;
-    data->gyro_y = 0;
-    data->gyro_z = 0;
-    data->acce_x = 0;
-    data->acce_y = 0;
-    data->acce_z = 0;
-    data->temperature = 0;
-    /* Start gyro simulation thread */
-    pthread_create(&gyroThread, NULL, s_Gyro_Simulator, &Gyro_Data);
-}
-
-void Gyro_Sim_Data_Deinit(void)
-{
+    /* Simulation */
+    isRunning = GYRO_SIMULATION_RUNNING;
+    while (isRunning)
+    {
+        /* Lock mutex */
+        pthread_mutex_lock(&mutexGyroData);
+        /* Randomly generate axis positions */
+        gyroData.axisX = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
+        gyroData.axisY = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
+        gyroData.axisZ = (double)rand()/RAND_MAX * 2 * MAX_GYRO - MAX_GYRO;
+        /* Randomly generate accelerations */
+        gyroData.acceX = (double)rand()/RAND_MAX * 2 * GRAVITY_ACCE - GRAVITY_ACCE;
+        temp           = GRAVITY_ACCE * GRAVITY_ACCE - (gyroData.acceX) * (gyroData.acceX);
+        alpha          = 2 * M_PI * simFrequency * time;
+        gyroData.acceY = sqrt(temp) * sin(alpha);
+        gyroData.acceZ = sqrt(temp) * cos(alpha);
+        gyroData.temp  = OFFSET_TEMP + AVG_TEMP * sin(alpha);
+        /* Unlock mutex */
+        pthread_mutex_unlock(&mutexGyroData);
+        /* Sleep */
+        usleep((1.0/simFrequency) * 1e6);
+        time = time + 1.0/simFrequency;
+    }
+    /* End the thread */
     pthread_exit(NULL);
 }
 
-ParamGyro_t Gyro_Sim_Get_Data(void)
+/**
+ * @brief  Initialize variables and start a gyroscope simulation thread
+ * @param  simFrequency Set simulation frequency (data changing rate)
+ * @retval StatusTypeDef Error status
+ */
+StatusTypeDef GyroSim_StartSimulation(uint32_t simFrequency)
 {
-    return Gyro_Data;
+    StatusTypeDef startState = ERROR_NONE;
+    /* Initialize gyro data */
+    gyroData.axisX = 0;
+    gyroData.axisY = 0;
+    gyroData.axisZ = 0;
+    gyroData.acceX = 0;
+    gyroData.acceY = 0;
+    gyroData.acceZ = 0;
+    gyroData.temp  = 0;
+    /* Start gyro simulation thread */
+    if (pthread_create(&threadGyro, NULL, Gyro_Simulation, (void *)&simFrequency) != 0)
+    {
+        startState = ERROR;
+    }
+    else if (pthread_mutex_init(&mutexGyroData, NULL))
+    {
+        startState = ERROR;
+    }
+    return startState;
 }
 
-double Gyro_Sim_Get_Gyro_X(void)
+/**
+ * @brief  Initialize variables and start a gyroscope simulation thread
+ * @param  simFrequency Set simulation frequency (data changing rate)
+ * @retval StatusTypeDef Error status
+ */
+StatusTypeDef GyroSim_StopSimulation(void)
 {
-    return Gyro_Data.gyro_x;
+    isRunning = 0;
+    return ERROR_NONE;
 }
 
-double Gyro_Sim_Get_Gyro_Y(void)
+/**
+ * @brief  Read one or all parameters of gyrocsope simulator
+ * @param  readOption Choose which parameters to read
+ * @param  pData Pointer to data buffer to hold data read
+ * @retval StatusTypeDef Error status
+ */
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData)
 {
-    return Gyro_Data.gyro_y;
-}
-
-double Gyro_Sim_Get_Gyro_Z(void)
-{
-    return Gyro_Data.gyro_z;
-}
-
-double Gyro_Sim_Get_Acce_X(void)
-{
-    return Gyro_Data.acce_x;
-}
-
-double Gyro_Sim_Get_Acce_Y(void)
-{
-    return Gyro_Data.acce_y;
-}
-
-double Gyro_Sim_Get_Acce_Z(void)
-{
-    return Gyro_Data.acce_z;
-}
-
-double Gyro_Sim_Get_Temperature(void)
-{
-    return Gyro_Data.temperature;
+    double  *pTempData = (double*)&gyroData;
+    uint8_t i          = 0;
+    /* Lock mutex */
+    pthread_mutex_lock(&mutexGyroData);
+    if (readOption == GYRO_READ_ALL)
+    {
+        for (i = 0; i < 7; i++)
+        {
+            pData[i] = pTempData[i];
+        }
+    }
+    else
+    {
+        *pData = ((double*)&gyroData)[readOption];
+    }
+    /* Unlock mutex */
+    pthread_mutex_unlock(&mutexGyroData);
+    return ERROR_NONE;
 }
 
 /******************************************************************************
