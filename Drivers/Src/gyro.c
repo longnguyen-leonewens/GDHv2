@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    gyro_sim.c
+  * @file    gyro.c
   * @author  LongH9
   * @date    12st Sep 2027
   * @brief   JOB 2: Gyroscope simulation and APIs
@@ -21,6 +21,7 @@
  * INCLUDES
  ******************************************************************************/
 #include "gyro_sim.h"
+#include "gyro.h"
 /******************************************************************************
  * PRIVATE TYPEDEF
  ******************************************************************************/
@@ -46,17 +47,55 @@
  ******************************************************************************/
 
 /**
- * @brief
- * @param  StartAddress
- * @param  EndAddress
- * @retval None
- * @note   Local variables should be camel case named
+ * @brief  Initialize gyroscope sensor
+ * @param  None
+ * @return DRV_StatusTypeDef Error status
  */
-void FLASH_FindSector(int StartAddress, int EndAddress)
+DRV_StatusTypeDef Gyro_Init(void)
 {
-    int tempData;
-    int pTempBuffer;
-    int countNum;
+    DRV_StatusTypeDef initStatus = ERROR_NONE;
+    /* Initialize GPIO Pins, Clocks, Configuration */
+
+    /* Start simulation */
+    if(GyroSim_StartSimulation(DEFAULT_FREQUENCY))
+    {
+        initStatus = ERROR;
+    }
+    return initStatus;
+}
+
+/**
+ * @brief  Deinitialize Gyroscope sensor
+ * @param  None
+ * @return DRV_StatusTypeDef Error status
+ */
+DRV_StatusTypeDef Gyro_DeInit(void)
+{
+    DRV_StatusTypeDef deinitStaus = ERROR_NONE;
+    /* Deinitialize GPIO Pins, Clocks, Periph */
+
+    /* Stop simulation */
+    if(GyroSim_StopSimulation())
+    {
+        deinitStaus = ERROR;
+    }
+    return deinitStaus;
+}
+
+/**
+ * @brief  Read data from gyroscopesensor
+ * @param  readOption Could be a value of @defgroup Gyro_ReadOption
+ * @param  pData Pointer to data buffer for storing values
+ * @return DRV_StatusTypeDef Error status
+ */
+DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double *pData)
+{
+    DRV_StatusTypeDef readStatus = ERROR_NONE;
+    if (GyroSim_ReadData(readOption, pData))
+    {
+        readStatus = ERROR;
+    }
+    return readStatus;
 }
 
 /******************************************************************************

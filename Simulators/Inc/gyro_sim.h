@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 #include <math.h>
 #include <pthread.h>
 /******************************************************************************
@@ -45,14 +46,35 @@ typedef enum
 /** @defgroup Parameter read options from gyroscope simulation
  * @{
  */
-#define GYRO_READ_AXIS_X                   (0U)
-#define GYRO_READ_AXIS_Y                   (1U)
-#define GYRO_READ_AXIS_Z                   (2U)
-#define GYRO_READ_ACCE_X                   (3U)
-#define GYRO_READ_ACCE_Y                   (4U)
-#define GYRO_READ_ACCE_Z                   (5U)
-#define GYRO_READ_TEMP                     (6U)
-#define GYRO_READ_ALL                      (7U)
+#define SIMULATOR_READ_AXIS_X                   (0U)
+#define SIMULATOR_READ_AXIS_Y                   (1U)
+#define SIMULATOR_READ_AXIS_Z                   (2U)
+#define SIMULATOR_READ_ACCE_X                   (3U)
+#define SIMULATOR_READ_ACCE_Y                   (4U)
+#define SIMULATOR_READ_ACCE_Z                   (5U)
+#define SIMULATOR_READ_TEMP                     (6U)
+#define SIMULATOR_READ_ALL                      (7U)
+
+#define IS_SIM_READ_OPTION(OP)          (((OP) == SIMULATOR_READ_AXIS_X) \
+                                      || ((OP) == SIMULATOR_READ_AXIS_Y) \
+                                      || ((OP) == SIMULATOR_READ_AXIS_Z) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_X) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_Y) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_Z) \
+                                      || ((OP) == SIMULATOR_READ_TEMP)   \
+                                      || ((OP) == SIMULATOR_READ_ALL))
+/**
+ * @}
+ */
+
+/** @defgroup Gyroscope sensor constants
+ * @{
+ */
+#define DEFAULT_FREQUENCY                      (60U)
+#define GRAVITY_ACCE                           (9.8)
+#define MAX_GYRO                               (10U)
+#define AVG_TEMP                               (77.5)
+#define OFFSET_TEMP                            (37.5)
 /**
  * @}
  */
