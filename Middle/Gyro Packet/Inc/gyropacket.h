@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
- * @file    ais_fsar_gyropacket.h
+ * @file    gyropacket.h
  * @author  TungBT23
- * @date    11st Sep 2027
- * @brief   JOB 3: Packaging data from gyroscope sensor
+ * @date    12nd Sep 2023
+ * @brief   JOB 3: Package data from gyroscope
  ******************************************************************************
  * @attention
  *
@@ -25,9 +25,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "gyro.h"
+/******************************************************************************
+* EXPORTED CONSTANTS
+******************************************************************************/
+#define SIZE_OF_PACKAGE 70
 /******************************************************************************
 * EXPORTED TYPEDEF
 ******************************************************************************/
+
+/**
+ * @brief  Error status
+ */
+typedef enum
+{
+    SUCCESS = 0U,
+    ERROR = !SUCCESS
+}ErrorStatus;
 
 /**
 * @brief Struct example
@@ -36,12 +50,12 @@
 */
 
 typedef enum {
-    SUCCESS = 0u,
+    SUCCESS,
     FAIL,
-}__status__;
+}status_t;
 
 
-typedef struct{
+typedef struct Gyro_Data_Struct{
    double Gyro_X;
    double Gyro_Y;
    double Gyro_Z;
@@ -49,27 +63,23 @@ typedef struct{
    double Acce_Y;
    double Acce_Z;
    double Temperature;
-}__attribute__((packed))Gyro_DataTypeDef;
+} __attribute__((packed)) Gyro_Data_Struct_tTypeDef;
 
-typedef struct {
+typedef struct __Gyro_PackageStruct
+{
    uint8_t Preamble[2];
    uint8_t Package_Version;
    uint8_t Timestamp[6];
-   Gyro_DataTypeDef Data ;
+   Gyro_Data_Struct_tTypeDef Data ;
    uint8_t Used;
    uint8_t Reserve[2];
    uint8_t CRC[2];
-}__attribute__((packed)) Gyro_PackageTypeDef;
+} __attribute__((packed)) Gyro_PackageStruct_tTypeDef;
 
 typedef union union_frame{
-   Gyro_PackageTypeDef Strc;
-   uint8_t Frame[70];
+   Gyro_PackageStruct_tTypeDef Strc;
+   uint8_t Frame[SIZE_OF_PACKAGE];
 } Package_FrameTypeDef;
-
-/******************************************************************************
-* EXPORTED CONSTANTS
-******************************************************************************/
-
 
 /******************************************************************************
 * EXPORTED MACROS
@@ -83,24 +93,30 @@ typedef union union_frame{
 * EXPORTED FUNCTIONS PROTOTYPES
 ******************************************************************************/
 
-/******************************************************************************
-* EXPORTED FUNCTIONS
-******************************************************************************/
-
 /**
-* @brief calculate CRC16
-* @param data the data to calculate
-* @param lenght of the data
-* @return 2 bytes of CRC16
-*/
-uint16_t Gyroscope_CRCCalc(uint8_t *data, uint16_t lenght);
-
-/**
-* @brief calculate CRC16
+* @brief convert to stirng
 * @param number convert to string
-* @return string
+* @param string is array to save string
+* @return the string after convert
 */
-char* ToString(int number);
+status_t GyroPackage_ToString(int number,char* string);
+
+
+/**
+* @brief convert package to array
+* @param package the struct input 
+* @return success or fail
+*/
+status_t GyroPackage_PackageToArray(Package_FrameTypeDef* package);
+
+
+/**
+* @brief convert array to package
+* @param package the array input output struct
+* @param array  input 
+* @return success or fail
+*/
+status_t GyroPackage_ArrayToPackage(Package_FrameTypeDef* package,uint8_t* array);
 
 #endif /* GYROPACKET_H_ */
 
