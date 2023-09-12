@@ -1,22 +1,32 @@
 /**
- * @file queue.h
- * @author HungDH14
- * @brief J0B 4- QUEUE
- * @version 0.1
- * @date 2023-09-11
- * 
- * @copyright Copyright (c) 2023
- * 
- */
+  ******************************************************************************
+  * @file   queue.h
+  * @author HungDH14
+  * @brief  J0B 4- QUEUE
+  * @date   2023-09-11
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
-#include <stdint.h>
-#include "ais_fsar_gyropacket.h"
 
-/*******************************************************************************
-* Definitions
-******************************************************************************/
+/******************************************************************************
+ * INCLUDES
+ ******************************************************************************/
+#include <stdint.h>
+/******************************************************************************
+ * EXPORTED TYPEDEF
+ ******************************************************************************/
 
 /**
  * number element of queue
@@ -28,7 +38,7 @@
  */
 typedef struct Queue_Instance{
     Package_FrameTypeDef dataFrame[QUEUE_MAX_SIZE];
-    uint8_t size; 
+    uint8_t size;
     uint8_t head;
     uint8_t tail;
 }Queue_Instance_Struct_t;
@@ -48,9 +58,21 @@ typedef enum Queue_Status{
  */
 typedef void(*Error_CallbackFunction)(Queue_Status_t);
 
-/*******************************************************************************
-* API
-******************************************************************************/
+/******************************************************************************
+ * EXPORTED CONSTANTS
+ ******************************************************************************/
+
+/******************************************************************************
+ * EXPORTED MACROS
+ ******************************************************************************/
+
+/******************************************************************************
+ * EXPORTED VARIABLES
+ ******************************************************************************/
+
+/******************************************************************************
+ * EXPORTED FUNCTIONS PROTOTYPES
+ ******************************************************************************/
 
 /**
  * @brief Function is used to initialize for Queue struct
@@ -86,7 +108,7 @@ Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
  * @brief Function is used to pop data from queue
  * @param pQueueInstance pointer to a queue struct
  * @param pPopData pointer to data popped from the queue
- * @return Queue_Status_t - status of function 
+ * @return Queue_Status_t - status of function
  */
 Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
                          Package_FrameTypeDef* pPopData);
@@ -95,9 +117,13 @@ Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
  * @brief Function is used to get the available length of the queue
  * @param queueInstance pointer to a queue struct
  * @param avaibleLength pointer to the number of available length of the queue
- * @return Queue_Status_t - status of function 
+ * @return Queue_Status_t - status of function
  */
 Queue_Status_t Queue_GetAvailbleLength(Queue_Instance_Struct_t* pQueueInstance,
                                        uint8_t* pAvailableLength);
 
 #endif /*QUEUE_H_*/
+
+/******************************************************************************
+ * EOF
+ ******************************************************************************/
