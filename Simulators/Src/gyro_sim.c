@@ -44,18 +44,6 @@ typedef struct __Gyro_ParamStruct
  * PRIVATE CONSTANTS
  ******************************************************************************/
 
-/** @defgroup Gyroscope sensor constants
- * @{
- */
-#define DEFAULT_FREQUENCY                      (60U)
-#define GRAVITY_ACCE                           (9.8)
-#define MAX_GYRO                               (10U)
-#define AVG_TEMP                               (77.5)
-#define OFFSET_TEMP                            (37.5)
-/**
- * @}
- */
-
 /** @defgroup Gyroscope simulation thread state
  * @{
  */
@@ -175,9 +163,11 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData)
 {
     double  *pTempData = (double*)&gyroData;
     uint8_t i          = 0;
+    /* Assertion */
+    assert(IS_SIM_READ_OPTION(readOption));
     /* Lock mutex */
     pthread_mutex_lock(&mutexGyroData);
-    if (readOption == GYRO_READ_ALL)
+    if (readOption == SIMULATOR_READ_ALL)
     {
         for (i = 0; i < 7; i++)
         {
