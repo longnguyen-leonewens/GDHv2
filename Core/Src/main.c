@@ -38,6 +38,15 @@
  * PRIVATE CONSTANTS
  ******************************************************************************/
 
+/** @defgroup FIFO Configurations
+ * @{
+ */
+#define FIFO_SIZE                        (16U)
+#define PACKAGE_SIZE                     (70U)
+/**
+ * @}
+ */
+
 /******************************************************************************
  * PRIVATE MACROS
  ******************************************************************************/
@@ -45,7 +54,16 @@
 /******************************************************************************
  * PRIVATE VARIABLES
  ******************************************************************************/
-
+/* FIFO Buffer for storing gyroscope data packet */
+uint8_t fifoBuffer[PACKAGE_SIZE][FIFO_SIZE];
+/* Package queue struct */
+Queue_TypeDef gyroQueue;
+/* Gyroscope data struct */
+Gyro_ParamsTypeDef gyroData;
+/* Mutex pthread type for FIFO */
+pthread_mutex_t mutexFIFO;
+/* Condition variable for signaling data logging thread */
+pthread_cond_t condNotifyThread;
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
@@ -65,7 +83,11 @@ int main(void)
     /* Initialize peripherals and modules */
     Gyro_Init();
     //Flash_Init();
-    //Queue_Init();
+    Queue_Init(&gyroQueue, fifoBuffer, PACKAGE_SIZE, FIFO_SIZE);
+    /* Init mutex for pushing and popping FIFO */
+    pthread_mutex_init(&mutexFIFO, NULL);
+    /* Init condition variable for thread signaling */
+    pthread_cond_init(&condNotifyThread, NULL);
     /* Create threads for handling gyrocope data and logging to FLASH */
     pthread_t threadDataHandling;
     pthread_t threadDataLogging;
@@ -77,6 +99,8 @@ int main(void)
     pthread_join(threadDataLogging , NULL);
     /* Deinitialize peripherals and modules */
     Gyro_DeInit();
+    /* Multithreading resources cleaning */
+    pthread_mutex_destroy(&mutexFIFO);
 
     return 0;
 }
@@ -88,7 +112,27 @@ int main(void)
  */
 void Application_DataHandling(void *arg)
 {
-
+    while(true)
+    {
+        /* Check if queue is not full yet to read data and push into FIFO */
+        if (Queue_IsFull(&gyroQueue) == false)
+        {
+            Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData);
+            /* Package data */
+            //GyroPackage_Build();
+            /* Lock mutex */
+            pthread_mutex_lock(&mutexFIFO);
+            /* Enqueue data */
+            //Queue_Enqueue(&gyroQueue,    ,     );
+            /* Unlock mutex */
+            pthread_mutex_unlock(&mutexFIFO);
+        }
+        /* Check if queue is not empty yet to signal another thread to pop data */
+        if (Queue_IsEmpty(&gyroQueue) == false)
+        {
+            pthread_cond_signal();
+        }
+    }
 }
 
 /**
@@ -98,7 +142,13 @@ void Application_DataHandling(void *arg)
  */
 void Application_DataLogging(void *arg)
 {
-
+    while(true)
+    {
+        /* Lock mutex */
+        pthread_mutex_lock(&mutexFIFO);
+        /* Unlock mutex */
+        pthread_mutex_unlock(&mutexFIFO);
+    }
 }
 
 /******************************************************************************
