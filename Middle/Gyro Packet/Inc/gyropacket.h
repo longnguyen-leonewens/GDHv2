@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
- * @file    ais_fsar_gyropacket.h
+ * @file    gyropacket.h
  * @author  TungBT23
- * @date    11st Sep 2027
- * @brief   JOB 3: Packaging data from gyroscope sensor
+ * @date    12nd Sep 2023
+ * @brief   JOB 3: Package data from gyroscope
  ******************************************************************************
  * @attention
  *
@@ -25,51 +25,68 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
+#include "gyro.h"
+/******************************************************************************
+* EXPORTED CONSTANTS
+******************************************************************************/
+
+/** @defgroup Gyroscope package field constants
+ * @{
+ */
+#define PACKAGE_SIZE                   (64U)
+
+#define PREAMBLE                       (0xABCDU)
+#define PACKAGE_VERSION                (0x01U)
+/**
+ * @}
+ */
+
 /******************************************************************************
 * EXPORTED TYPEDEF
 ******************************************************************************/
 
 /**
-* @brief Struct example
-* @note  Struct shoulde be name [Module name]_[Function of Struct]TypeDef
-* @note  Struct members should capitalized every word
-*/
+ * @brief  Error status
+ */
+typedef enum
+{
+    SUCCESS = 0U,
+    ERROR = !SUCCESS
+}ErrorStatus;
 
-typedef enum {
-    SUCCESS = 0u,
-    FAIL,
-}__status__;
+/**
+ * @brief  Gyroscope packet struct
+ */
+typedef struct __Gyro_PackageStruct
+{
+   uint8_t            Preamble[2];         /*<! Preamble start bytes */
+   uint8_t            PackageVer;          /*<! Package version */
+   uint8_t            Timestamp[6];        /*<! Gyroscope sensro read time*/
+   Gyro_ParamsTypeDef Data ;               /*<! Sensor data */
+   uint8_t            Used;                /*<! Using mark */
+   uint8_t            Reserved[2];          /*<! Reserved for future use */
+   uint8_t            CRC[2];              /*<! CRC Check bytes */
+} __attribute__((packed)) Gyro_PackageTypeDef;
 
+/**
+ * @brief  Gyroscope package information as strings
+ */
+typedef struct __Gyro_StringStruct
+{
+   char PackageVer[2];          /*<! Packet version xx */
+   char Timestamp[6];           /*<! Timestamp xx:xx:xx */
+   char GyroData[6][6];         /*<! Gyroscope data xxx,xx */
+}Gyro_StringsTypeDef;
 
-typedef struct{
-   double Gyro_X;
-   double Gyro_Y;
-   double Gyro_Z;
-   double Acce_X;
-   double Acce_Y;
-   double Acce_Z;
-   double Temperature;
-}__attribute__((packed))Gyro_DataTypeDef;
-
-typedef struct {
-   uint8_t Preamble[2];
-   uint8_t Package_Version;
-   uint8_t Timestamp[6];
-   Gyro_DataTypeDef Data ;
-   uint8_t Used;
-   uint8_t Reserve[2];
-   uint8_t CRC[2];
-}__attribute__((packed)) Gyro_PackageTypeDef;
-
-typedef union union_frame{
-   Gyro_PackageTypeDef Strc;
-   uint8_t Frame[70];
-} Package_FrameTypeDef;
-
-/******************************************************************************
-* EXPORTED CONSTANTS
-******************************************************************************/
-
+/**
+ * @brief  Gyroscope packet union
+ */
+typedef union __Gyro_DataFrameUnion
+{
+   Gyro_PackageTypeDef Fields;                 /*<! Package frame with fields*/
+   uint8_t             ByteFrame[PACKAGE_SIZE]; /*<! Data frame in as bytes */
+} Gyro_DataFrameTypeDef;
 
 /******************************************************************************
 * EXPORTED MACROS
@@ -83,24 +100,24 @@ typedef union union_frame{
 * EXPORTED FUNCTIONS PROTOTYPES
 ******************************************************************************/
 
-/******************************************************************************
-* EXPORTED FUNCTIONS
-******************************************************************************/
+/**
+* @brief   Build a package from data that was read from sensor
+ * @param  pFrame pointer to package struct
+ * @param  pSensorData pointer to gyroscope data struct
+ * @return ErrorStatus SUCCESS or ERROR
+ */
+ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
+                              Gyro_ParamsTypeDef *pSensorData);
+
 
 /**
-* @brief calculate CRC16
-* @param data the data to calculate
-* @param lenght of the data
-* @return 2 bytes of CRC16
+* @brief  Convert package to struct of strings used for printing, interface
+ * @param pFrame pointer to package struct
+ * @param pString pointer to string struct
+* @return ErrorStatus SUCCESS or ERROR
 */
-uint16_t Gyroscope_CRCCalc(uint8_t *data, uint16_t lenght);
-
-/**
-* @brief calculate CRC16
-* @param number convert to string
-* @return string
-*/
-char* ToString(int number);
+ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
+                                 Gyro_StringsTypeDef* pString);
 
 #endif /* GYROPACKET_H_ */
 

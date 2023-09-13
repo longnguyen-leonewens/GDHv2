@@ -33,17 +33,17 @@
  */
 typedef struct __Gyro_ParamStruct
 {
-    double axisX;                  /*>! x-axis position */
-    double axisY;                  /*>! y-axis position */
-    double axisZ;                  /*>! z-axis position */
-    double acceX;                  /*>! x-axis acceleration */
-    double acceY;                  /*>! y-axis acceleration */
-    double acceZ;                  /*>! z-axis acceleration */
-    double temp;                   /*>! Temperature in Celcius */
-}Gyro_ParamsTypeDef;
+    double   axisX;                  /*>! x-axis position */
+    double   axisY;                  /*>! y-axis position */
+    double   axisZ;                  /*>! z-axis position */
+    double   acceX;                  /*>! x-axis acceleration */
+    double   acceY;                  /*>! y-axis acceleration */
+    double   acceZ;                  /*>! z-axis acceleration */
+    uint16_t temp;                   /*>! Temperature in Celcius */
+} __attribute__((packed)) Gyro_ParamsTypeDef;
 
 /**
-  * @brief  HAL Status structures definition
+  * @brief  Driver Status structures definition
   */
 typedef enum
 {
@@ -68,15 +68,6 @@ typedef enum
 #define GYRO_READ_ACCE_Z                   (5U)
 #define GYRO_READ_TEMP                     (6U)
 #define GYRO_READ_ALL                      (7U)
-
-#define IS_GYRO_READ_OPTION(OP)         (((OP) == GYRO_READ_AXIS_X) \
-                                      || ((OP) == GYRO_READ_AXIS_Y) \
-                                      || ((OP) == GYRO_READ_AXIS_Z) \
-                                      || ((OP) == GYRO_READ_ACCE_X) \
-                                      || ((OP) == GYRO_READ_ACCE_Y) \
-                                      || ((OP) == GYRO_READ_ACCE_Z) \
-                                      || ((OP) == GYRO_READ_TEMP)   \
-                                      || ((OP) == GYRO_READ_ALL))
 /**
  * @}
  */
@@ -114,9 +105,9 @@ DRV_StatusTypeDef Gyro_DeInit(void);
  * @param  pData Pointer to data buffer for storing values
  * @return DRV_StatusTypeDef Error status
  */
-DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double *pData);
+DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double *pData, uint16_t *pTemp);
 
-#endif /* LIBRARY_H_ */
+#endif /* GYRO_H_ */
 
 /******************************************************************************
  * EOF
