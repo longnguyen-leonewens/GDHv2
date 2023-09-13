@@ -25,26 +25,37 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <pthread.h>
 /******************************************************************************
  * EXPORTED TYPEDEF
  ******************************************************************************/
-
 /**
- * @brief Struct for parameter of gyro
- *
- */
-typedef struct __Gyro_DataStruct
+  * @brief  Status structures definition
+  */
+typedef enum
 {
-    double gyro_x;                  /*>! x-axis position */
-    double gyro_y;                  /*>! y-axis position */
-    double gyro_z;                  /*>! z-axis position */
-    double acce_x;                  /*>! x-axis acceleration */
-    double acce_y;                  /*>! y-axis acceleration */
-    double acce_z;                  /*>! z-axis acceleration */
-    double temperature;             /*>! Temperature in Celcius */
-}ParamGyro_t;
+  ERROR_NONE = 0x00U,
+  ERROR      = 0x01U,
+  BUSY       = 0x02U,
+  TIMEOUT    = 0x03U
+} StatusTypeDef;
+
+/** @defgroup Parameter read options from gyroscope simulation
+ * @{
+ */
+#define GYRO_READ_AXIS_X                   (0U)
+#define GYRO_READ_AXIS_Y                   (1U)
+#define GYRO_READ_AXIS_Z                   (2U)
+#define GYRO_READ_ACCE_X                   (3U)
+#define GYRO_READ_ACCE_Y                   (4U)
+#define GYRO_READ_ACCE_Z                   (5U)
+#define GYRO_READ_TEMP                     (6U)
+#define GYRO_READ_ALL                      (7U)
+/**
+ * @}
+ */
 
 /******************************************************************************
  * EXPORTED CONSTANTS
@@ -66,75 +77,30 @@ typedef struct __Gyro_DataStruct
 /******************************************************************************
  * EXPORTED FUNCTIONS
  ******************************************************************************/
-/**
- * @brief Funtion to init parameter of gyro sensor
- *
- * @param gyroThread is ID of thread
- * @param data is pointer to the memory that initted
- */
-void Gyro_Sim_Data_Init(pthread_t gyroThread, ParamGyro_t *data);
 
 /**
- * @brief Funtion to deinit and exit thread
- *
+ * @brief  Start gyroscope simulating thread
+ * @param  None
+ * @retval StatusTypeDef Error status
  */
-void Gyro_Sim_Data_Deinit(void);
+StatusTypeDef GyroSim_StartSimulation(uint32_t simFrequency);
 
 /**
- * @brief Funtion to get all parameter of gyro sensor
- *
- * @return ParamGyro_t struct for parameter of gyro sensor
+ * @brief  Stop gyroscope simulating thread
+ * @param  None
+ * @retval StatusTypeDef Error status
  */
-ParamGyro_t Gyro_Sim_Get_Data(void);
+StatusTypeDef GyroSim_StopSimulation(void);
 
 /**
- * @brief Funtion to get gyro_x
- *
- * @return double value of gyro_x
+ * @brief  Read one or all parameters of gyrocsope simulator
+ * @param  readOption Choose which parameters to read
+ * @param  pData Pointer to data buffer to hold data read
+ * @retval StatusTypeDef Error status
+ * @note   For READ_ALL: the sequence of parameters are
+ *         Axis X -> Axis Y -> Axis Z -> Acceleration X -> Acceleration Y -> Acceleration Z -> Temperature
  */
-double Gyro_Sim_Get_Gyro_X(void);
-
-/**
- * @brief Funtion to get gyro_y
- *
- * @return double value of gyro_y
- */
-double Gyro_Sim_Get_Gyro_Y(void);
-
-/**
- * @brief Funtion to get gyro_z
- *
- * @return double value of gyro_z
- */
-double Gyro_Sim_Get_Gyro_Z(void);
-
-/**
- * @brief Funtion to get acce_x
- *
- * @return double value of acce_x
- */
-double Gyro_Sim_Get_Acce_X(void);
-
-/**
- * @brief Funtion to get acce_y
- *
- * @return double value of acce_y
- */
-double Gyro_Sim_Get_Acce_Y(void);
-
-/**
- * @brief Funtion to get acce_z
- *
- * @return double value of acce_z
- */
-double Gyro_Sim_Get_Acce_Z(void);
-
-/**
- * @brief Funtion to get temperature
- *
- * @return double value of temperature
- */
-double Gyro_Sim_Get_Temperature(void);
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData);
 
 #endif /* GYRO_SIM_H_ */
 
