@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    flash_sim.h
-  * @author  VinhDeDe1
+  * @author  VinhDD1
   * @date    11st Sep 2027
   * @brief   JOB 6: Flash simulator
   ******************************************************************************
@@ -16,8 +16,8 @@
   *
   ******************************************************************************
   */
-#ifndef FLASH_H_
-#define FLASH_H_
+#ifndef FLASH_SIM_H_
+#define FLASH_SIM_H_
 
 /******************************************************************************
  * INCLUDES
@@ -49,6 +49,7 @@ typedef enum
 typedef struct FlashSim_Handle_Struct
 {
     uint32_t FlashStartAddress;
+    uint32_t size;
     FlashSim_State_t state;
     FlashSim_Lock_t  lock;
     p_FlashSim_ErrorCallback ErrorCallbackPointer;
