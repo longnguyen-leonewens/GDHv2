@@ -25,11 +25,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
 #include "gyro.h"
 /******************************************************************************
 * EXPORTED CONSTANTS
 ******************************************************************************/
-#define SIZE_OF_PACKAGE 70
+
+/** @defgroup Gyroscope package field constants
+ * @{
+ */
+#define PACKAGE_SIZE                   (64U)
+
+#define PREAMBLE                       (0xABCDU)
+#define PACKAGE_VERSION                (0x01U)
+/**
+ * @}
+ */
+
 /******************************************************************************
 * EXPORTED TYPEDEF
 ******************************************************************************/
@@ -44,42 +56,37 @@ typedef enum
 }ErrorStatus;
 
 /**
-* @brief Struct example
-* @note  Struct shoulde be name [Module name]_[Function of Struct]TypeDef
-* @note  Struct members should capitalized every word
-*/
-
-typedef enum {
-    SUCCESS,
-    FAIL,
-}status_t;
-
-
-typedef struct Gyro_Data_Struct{
-   double Gyro_X;
-   double Gyro_Y;
-   double Gyro_Z;
-   double Acce_X;
-   double Acce_Y;
-   double Acce_Z;
-   double Temperature;
-} __attribute__((packed)) Gyro_Data_Struct_tTypeDef;
-
+ * @brief  Gyroscope packet struct
+ */
 typedef struct __Gyro_PackageStruct
 {
-   uint8_t Preamble[2];
-   uint8_t Package_Version;
-   uint8_t Timestamp[6];
-   Gyro_Data_Struct_tTypeDef Data ;
-   uint8_t Used;
-   uint8_t Reserve[2];
-   uint8_t CRC[2];
-} __attribute__((packed)) Gyro_PackageStruct_tTypeDef;
+   uint8_t            Preamble[2];         /*<! Preamble start bytes */
+   uint8_t            PackageVer;          /*<! Package version */
+   uint8_t            Timestamp[6];        /*<! Gyroscope sensro read time*/
+   Gyro_ParamsTypeDef Data ;               /*<! Sensor data */
+   uint8_t            Used;                /*<! Using mark */
+   uint8_t            Reserved[2];          /*<! Reserved for future use */
+   uint8_t            CRC[2];              /*<! CRC Check bytes */
+} __attribute__((packed)) Gyro_PackageTypeDef;
 
-typedef union union_frame{
-   Gyro_PackageStruct_tTypeDef Strc;
-   uint8_t Frame[SIZE_OF_PACKAGE];
-} Package_FrameTypeDef;
+/**
+ * @brief  Gyroscope package information as strings
+ */
+typedef struct __Gyro_StringStruct
+{
+   char PackageVer[2];          /*<! Packet version xx */
+   char Timestamp[6];           /*<! Timestamp xx:xx:xx */
+   char GyroData[6][6];         /*<! Gyroscope data xxx,xx */
+}Gyro_StringsTypeDef;
+
+/**
+ * @brief  Gyroscope packet union
+ */
+typedef union __Gyro_DataFrameUnion
+{
+   Gyro_PackageTypeDef Fields;                 /*<! Package frame with fields*/
+   uint8_t             ByteFrame[PACKAGE_SIZE]; /*<! Data frame in as bytes */
+} Gyro_DataFrameTypeDef;
 
 /******************************************************************************
 * EXPORTED MACROS
@@ -94,29 +101,23 @@ typedef union union_frame{
 ******************************************************************************/
 
 /**
-* @brief convert to stirng
-* @param number convert to string
-* @param string is array to save string
-* @return the string after convert
-*/
-status_t GyroPackage_ToString(int number,char* string);
+* @brief   Build a package from data that was read from sensor
+ * @param  pFrame pointer to package struct
+ * @param  pSensorData pointer to gyroscope data struct
+ * @return ErrorStatus SUCCESS or ERROR
+ */
+ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
+                              Gyro_ParamsTypeDef *pSensorData);
 
 
 /**
-* @brief convert package to array
-* @param package the struct input 
-* @return success or fail
+* @brief  Convert package to struct of strings used for printing, interface
+ * @param pFrame pointer to package struct
+ * @param pString pointer to string struct
+* @return ErrorStatus SUCCESS or ERROR
 */
-status_t GyroPackage_PackageToArray(Package_FrameTypeDef* package);
-
-
-/**
-* @brief convert array to package
-* @param package the array input output struct
-* @param array  input 
-* @return success or fail
-*/
-status_t GyroPackage_ArrayToPackage(Package_FrameTypeDef* package,uint8_t* array);
+ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
+                                 Gyro_StringsTypeDef* pString);
 
 #endif /* GYROPACKET_H_ */
 

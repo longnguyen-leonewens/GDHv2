@@ -29,16 +29,16 @@
  * @brief Struct for parameter of gyro
  *
  */
-typedef struct __Gyro_ParamStruct
+typedef struct __GyroSim_ParamStruct
 {
-    double axisX;                  /*>! x-axis position */
-    double axisY;                  /*>! y-axis position */
-    double axisZ;                  /*>! z-axis position */
-    double acceX;                  /*>! x-axis acceleration */
-    double acceY;                  /*>! y-axis acceleration */
-    double acceZ;                  /*>! z-axis acceleration */
-    double temp;                   /*>! Temperature in Celcius */
-}Gyro_ParamsTypeDef;
+    double   axisX;                  /*>! x-axis position */
+    double   axisY;                  /*>! y-axis position */
+    double   axisZ;                  /*>! z-axis position */
+    double   acceX;                  /*>! x-axis acceleration */
+    double   acceY;                  /*>! y-axis acceleration */
+    double   acceZ;                  /*>! z-axis acceleration */
+    uint16_t temp;                   /*>! Temperature in Celcius */
+}GyroSim_ParamsTypeDef;
 
 /******************************************************************************
  * PRIVATE CONSTANTS
@@ -52,17 +52,34 @@ typedef struct __Gyro_ParamStruct
 /**
  * @}
  */
+
+/** @defgroup Misc
+ * @{
+ */
+#define M_PI            (3.14159265358979323846)
+/**
+ * @}
+ */
 /******************************************************************************
  * PRIVATE MACROS
  ******************************************************************************/
+#define IS_SIM_READ_OPTION(OP)          (((OP) == SIMULATOR_READ_AXIS_X) \
+                                      || ((OP) == SIMULATOR_READ_AXIS_Y) \
+                                      || ((OP) == SIMULATOR_READ_AXIS_Z) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_X) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_Y) \
+                                      || ((OP) == SIMULATOR_READ_ACCE_Z) \
+                                      || ((OP) == SIMULATOR_READ_TEMP)   \
+                                      || ((OP) == SIMULATOR_READ_ALL))
 
+#define IS_VALID_POINTER(PTR)                   ((PTR) != NULL)
 /******************************************************************************
  * PRIVATE VARIABLES
  ******************************************************************************/
-static Gyro_ParamsTypeDef gyroData;       /* Struct to hold simulation data */
-static pthread_t          threadGyro;     /* For Gyroscope thread */
-static pthread_mutex_t    mutexGyroData;  /* Mutex for Gyroscope data */
-static bool               isRunning;      /* For controlling the thread */
+static GyroSim_ParamsTypeDef gyroData;       /* Struct to hold simulation data */
+static pthread_t             threadGyro;     /* For Gyroscope thread */
+static pthread_mutex_t       mutexGyroData;  /* Mutex for Gyroscope data */
+static bool                  isRunning;      /* For controlling the thread */
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
@@ -159,24 +176,39 @@ StatusTypeDef GyroSim_StopSimulation(void)
  * @param  pData Pointer to data buffer to hold data read
  * @retval StatusTypeDef Error status
  */
-StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData)
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, uint16_t *pTemp)
 {
-    double  *pTempData = (double*)&gyroData;
-    uint8_t i          = 0;
+    double       *pTempData  = (double*)&gyroData;
+    uint8_t       i          = 0;
+    StatusTypeDef readStatus = ERROR_NONE;
     /* Assertion */
     assert(IS_SIM_READ_OPTION(readOption));
     /* Lock mutex */
     pthread_mutex_lock(&mutexGyroData);
-    if (readOption == SIMULATOR_READ_ALL)
+    if (readOption == SIMULATOR_READ_TEMP)
     {
-        for (i = 0; i < 7; i++)
+        /* Check parameter */
+        assert(IS_VALID_POINTER(pTemp));
+        *pTemp = gyroData.temp;
+    }
+    else if (readOption == SIMULATOR_READ_ALL)
+    {
+        /* Check parameter */
+        assert(IS_VALID_POINTER(pTemp));
+        assert(IS_VALID_POINTER(pData));
+        /* Read gyroscope stats */
+        for (i = 0; i < 6; i++)
         {
             pData[i] = pTempData[i];
         }
+        /* Read temperature */
+        *pTemp = gyroData.temp;
     }
     else
     {
-        *pData = ((double*)&gyroData)[readOption];
+        /* Check parameter */
+        assert(IS_VALID_POINTER(pData));
+        *pData = pTempData[readOption];
     }
     /* Unlock mutex */
     pthread_mutex_unlock(&mutexGyroData);

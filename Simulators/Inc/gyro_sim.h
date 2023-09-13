@@ -54,15 +54,6 @@ typedef enum
 #define SIMULATOR_READ_ACCE_Z                   (5U)
 #define SIMULATOR_READ_TEMP                     (6U)
 #define SIMULATOR_READ_ALL                      (7U)
-
-#define IS_SIM_READ_OPTION(OP)          (((OP) == SIMULATOR_READ_AXIS_X) \
-                                      || ((OP) == SIMULATOR_READ_AXIS_Y) \
-                                      || ((OP) == SIMULATOR_READ_AXIS_Z) \
-                                      || ((OP) == SIMULATOR_READ_ACCE_X) \
-                                      || ((OP) == SIMULATOR_READ_ACCE_Y) \
-                                      || ((OP) == SIMULATOR_READ_ACCE_Z) \
-                                      || ((OP) == SIMULATOR_READ_TEMP)   \
-                                      || ((OP) == SIMULATOR_READ_ALL))
 /**
  * @}
  */
@@ -82,7 +73,6 @@ typedef enum
 /******************************************************************************
  * EXPORTED CONSTANTS
  ******************************************************************************/
-
 
 /******************************************************************************
  * EXPORTED MACROS
@@ -117,12 +107,13 @@ StatusTypeDef GyroSim_StopSimulation(void);
 /**
  * @brief  Read one or all parameters of gyrocsope simulator
  * @param  readOption Choose which parameters to read
- * @param  pData Pointer to data buffer to hold data read
+ * @param  pData Pointer to data buffer to hold gyroscope values
+ * @param  pTemp Pointer to data buffer to hold temperature value
  * @retval StatusTypeDef Error status
  * @note   For READ_ALL: the sequence of parameters are
  *         Axis X -> Axis Y -> Axis Z -> Acceleration X -> Acceleration Y -> Acceleration Z -> Temperature
  */
-StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData);
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, uint16_t *pTemp);
 
 #endif /* GYRO_SIM_H_ */
 

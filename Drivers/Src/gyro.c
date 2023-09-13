@@ -33,7 +33,16 @@
 /******************************************************************************
  * PRIVATE MACROS
  ******************************************************************************/
+#define IS_GYRO_READ_OPTION(OP)         (((OP) == GYRO_READ_AXIS_X) \
+                                      || ((OP) == GYRO_READ_AXIS_Y) \
+                                      || ((OP) == GYRO_READ_AXIS_Z) \
+                                      || ((OP) == GYRO_READ_ACCE_X) \
+                                      || ((OP) == GYRO_READ_ACCE_Y) \
+                                      || ((OP) == GYRO_READ_ACCE_Z) \
+                                      || ((OP) == GYRO_READ_TEMP)   \
+                                      || ((OP) == GYRO_READ_ALL))
 
+#define IS_VALID_POINTER(PTR)                   ((PTR) != NULL)
 /******************************************************************************
  * PRIVATE VARIABLES
  ******************************************************************************/
@@ -75,7 +84,7 @@ DRV_StatusTypeDef Gyro_DeInit(void)
     /* Deinitialize GPIO Pins, Clocks, Periph */
 
     /* Stop simulation */
-    if(GyroSim_StopSimulation())
+    if(GyroSim_StopSimulation() == ERROR)
     {
         deinitStaus = ERROR;
     }
@@ -88,10 +97,12 @@ DRV_StatusTypeDef Gyro_DeInit(void)
  * @param  pData Pointer to data buffer for storing values
  * @return DRV_StatusTypeDef Error status
  */
-DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double *pData)
+DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double*pData, uint16_t *pTemp)
 {
     DRV_StatusTypeDef readStatus = ERROR_NONE;
-    if (GyroSim_ReadData(readOption, pData))
+    /* Check parameters */
+    assert(IS_GYRO_READ_OPTION(readOption));
+    if (GyroSim_ReadData(readOption, pData, pTemp) == ERROR)
     {
         readStatus = ERROR;
     }
