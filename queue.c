@@ -1,240 +1,201 @@
 /**
-  ******************************************************************************
-  * @file    queue.c
-  * @author  Leo Newens (LongNDT5)
-  * @version V1.0
-  * @date    July 5th 2023
-  * @brief   Implementation for queue library
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 longnguyen-leonewens (Github)
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-
-/******************************************************************************
- * INCLUDES
- ******************************************************************************/
-#include "queue.h"
+ * @file queue.c
+ * @author HungDH14
+ * @brief J0B 4- QUEUE
+ * @version 0.1
+ * @date 2023-09-11
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+#include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-/******************************************************************************
- * PRIVATE TYPEDEF
- ******************************************************************************/
+#include "queue.h"
+#include "assert.h"
+/*******************************************************************************
+* Definitions
+******************************************************************************/
 
-/******************************************************************************
- * PRIVATE CONSTANTS
- ******************************************************************************/
+#define IS_VALID_POINTER(ptr)   (NULL != ptr)
 
-/******************************************************************************
- * PRIVATE MACROS
- ******************************************************************************/
+/*******************************************************************************
+* Variables
+******************************************************************************/
 
-/******************************************************************************
- * PRIVATE VARIABLES
- ******************************************************************************/
+Error_CallbackFunction pError;
 
-/******************************************************************************
- * PRIVATE FUNCTIONS PROTOTYPES
- ******************************************************************************/
-
-/******************************************************************************
- * PRIVATE FUNCTIONS
- ******************************************************************************/
+/*******************************************************************************
+* Code
+******************************************************************************/
 
 /**
- * @brief  Initialize queue struct
- * @param  pQueue: pointer to a queue struct
- * @param  dataBuffer: data buffer of queue
- * @param  elementSize: size of each elements in queue
- * @param  queueSize: size of the queue (number of elements)
- * @retval None
+ * @brief Function is used to initialize for Queue struct
+ * @param pQueueInstance pointer to a queue struct
+ * @param bufferQueue    buffer used as a queue
+ * @param sizeQueue      number of element of queue
+ * @param sizeElement    size of data element
+ * @return Queue_Status_t- status of function
  */
-void Queue_Init(Queue_TypeDef *pQueue,\
-                uint8_t *dataBuffer,\
-                const uint32_t elementSize,\
-                const uint32_t queueSize)
+Queue_Status_t Queue_Init(Queue_Instance_Struct_t* pQueueInstance,
+                          uint8_t* bufferQueue,
+                          uint8_t sizeQueue,
+                          uint16_t sizeElement)
 {
-    pQueue->queueBuffer = dataBuffer;
-    pQueue->elementSize = elementSize;
-    pQueue->queueSize   = queueSize;
-    pQueue->queueFront  = 0x00;
-    pQueue->queueBack   = 0x00;
-    memset(pQueue->queueBuffer, 0x00, pQueue->elementSize * pQueue->queueSize);
+    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(bufferQueue));
+
+    pQueueInstance->pQueueElement = bufferQueue;
+    pQueueInstance->elementSize   = sizeElement;
+    pQueueInstance->queueSize     = sizeQueue;
+    pQueueInstance->levelQueue    = 0;
+    pQueueInstance->head          = 0;
+    pQueueInstance->tail          = 0;
+
+    return QUEUE_OK;
 }
 
 /**
- * @brief  Enqueue(insert) data into queue
- * @param  pQueue: pointer to a queue struct
- * @param  pData: pointer to the data to be inserted
- * @param  numOfElements: number of elements to enqueue
- * @retval Status
+ * @brief Function is used to check queue full or not
+ * @param pQueueInstance pointer to a queue struct
+ * @return Queue_Status_t- status of function
  */
-Queue_StatusTypeDef Queue_Enqueue(Queue_TypeDef *pQueue,\
-                                  const uint8_t *pData,\
-                                  const uint32_t numOfElements)
+Queue_Status_t Queue_IsFull(Queue_Instance_Struct_t* pQueueInstance)
 {
-    uint32_t count;
-    uint32_t bytes;
-    uint32_t bufferIndex;
-    Queue_StatusTypeDef enqueueStatus = QUEUE_OK;
-    if ((pQueue->elementCount + numOfElements) > pQueue->queueSize)
+    Queue_Status_t retVal = QUEUE_OK;
+    ASSERT(IS_VALID_POINTER(pQueueInstance));
+
+    if (pQueueInstance->levelQueue == pQueueInstance->queueSize)
     {
-        enqueueStatus = QUEUE_ERROR_FULL;
+        retVal = QUEUE_FULL;
+    }
+
+    return retVal;
+}
+
+/**
+ * @brief Function is used to check queue empty or not
+ * @param pQueueInstance pointer to a queue struct
+ * @return Queue_Status_t - status of function
+ */
+Queue_Status_t Queue_IsEmpty(Queue_Instance_Struct_t* pQueueInstance)
+{
+    Queue_Status_t retVal = QUEUE_OK;
+    ASSERT(IS_VALID_POINTER(pQueueInstance));
+
+    if (pQueueInstance->levelQueue == 0)
+    {
+        retVal = QUEUE_EMPTY;
+    }
+
+    return retVal;
+}
+
+/**
+ * @brief Function is used to push data to queue
+ * @param pQueueInstance   pointer to a queue struct
+ * @param pPushData        pointer to data needs pushed to the queue
+ * @param lengthDataPush   length of data for push to queue struct
+ * @return Queue_Status_t  status of function
+ */
+Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
+                          uint8_t* pPushData,
+                          uint16_t lengthDataPush)
+{
+    Queue_Status_t retVal = QUEUE_OK;
+    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPushData));
+
+    if (pQueueInstance->levelQueue != pQueueInstance->queueSize)
+    {
+        memcpy(&(pQueueInstance->pQueueElement[pQueueInstance->head]),pPushData,lengthDataPush);
+        pQueueInstance->head = (pQueueInstance->head + pQueueInstance->elementSize) % (pQueueInstance->queueSize * pQueueInstance->elementSize);
+        pQueueInstance->levelQueue++;
     }
     else
     {
-        /* Place data in buffer */
-        for (count = 0; count < numOfElements; count++)
-        {
-            for(bytes = 0; bytes < pQueue->elementSize; bytes++)
-            {
-                bufferIndex = count * pQueue->elementSize + bytes;
-                pQueue->queueBuffer[bufferIndex] = pData[bufferIndex];
-            }
-            pQueue->elementCount++;
-            pQueue->queueBack = (pQueue->queueBack + 1U) % pQueue->queueSize;
-        }
+        pError(QUEUE_FULL);
+        retVal = QUEUE_FULL;
     }
-    return enqueueStatus;
+
+    return retVal;
 }
 
 /**
- * @brief  Dequeue data from queue
- * @param  pQueue: pointer to a queue struct
- * @param  pData: pointer to the data that store the data to be dequeued
- * @param  numOfElements: number of elements to dequeue
- * @retval Status
+ * @brief Function is used to pop data from queue
+ * @param pQueueInstance pointer to a queue struct
+ * @param pPopData       pointer to data popped from the queue
+ * @param lengthDataPop  the length of data to be pop from the queue
+ * @return Queue_Status_t - status of function 
  */
-Queue_StatusTypeDef Queue_Dequeue(Queue_TypeDef *pQueue,\
-                                  uint8_t *pBuffer,\
-                                  const uint32_t numOfElements)
+Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
+                         uint8_t* pPopData,
+                         uint16_t lengthDataPop)
 {
-    uint32_t count;
-    uint32_t bytes;
-    uint32_t bufferIndex;
-    Queue_StatusTypeDef dequeueStatus = QUEUE_OK;
-    if (numOfElements > pQueue->elementCount)
+    Queue_Status_t retVal = QUEUE_OK;
+    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPopData));
+
+    if (pQueueInstance->levelQueue != 0)
     {
-        dequeueStatus = QUEUE_ERROR_EMPTY;
+        memcpy(pPopData,&(pQueueInstance->pQueueElement[pQueueInstance->tail]),lengthDataPop);
+        memset(&(pQueueInstance->pQueueElement[pQueueInstance->tail]),0,pQueueInstance->elementSize);
+        pQueueInstance->tail = (pQueueInstance->tail + pQueueInstance->elementSize) % (pQueueInstance->queueSize * pQueueInstance->elementSize);
+        pQueueInstance->levelQueue--;
     }
     else
     {
-        for (count = 0; count < numOfElements; count++)
-        {
-            for(bytes = 0; bytes < pQueue->elementSize; bytes++)
-            {
-                bufferIndex = count * pQueue->elementSize + bytes;
-                pBuffer[bufferIndex] = pQueue->queueBuffer[bufferIndex];
-            }
-            pQueue->elementCount--;
-            pQueue->queueFront = (pQueue->queueFront + 1U) % pQueue->queueSize;
-        }
+        pError(QUEUE_EMPTY);
+        retVal = QUEUE_EMPTY;
     }
-    return dequeueStatus;
+
+    return retVal;
 }
 
 /**
- * @brief  Check if a queue is empty
- * @param  pQueue: Pointer to a queue struct
- * @retval None
+ * @brief Function is used to get the available length of the queue
+ * @param pQueueInstance pointer to a queue struct
+ * @param pAvaibleLength pointer to the number of available length of the queue
+ * @return Queue_Status_t - status of function 
  */
-bool Queue_IsEmpty(const Queue_TypeDef *pQueue)
+Queue_Status_t Queue_GetAvailableLength(Queue_Instance_Struct_t* pQueueInstance,
+                                       uint8_t* pAvailableLength)
 {
-    bool checkQueue = false;
-    if (pQueue->elementCount == 0)
-    {
-        checkQueue = true;
-    }
-    return checkQueue;
+    Queue_Status_t retVal = QUEUE_OK;
+    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pAvailableLength));
+
+    *pAvailableLength = pQueueInstance->queueSize - pQueueInstance->levelQueue;
+
+    return retVal;
+
 }
 
 /**
- * @brief  Check if a queue is full
- * @param  pQueue: Pointer to a queue struct
- * @retval None
+ * @brief Function is used to reset queue
+ * @param pQueueInstance pointer to a queue struct
+ * @return Queue_Status_t - status of function 
  */
-bool Queue_IsFull(const Queue_TypeDef *pQueue)
+Queue_Status_t Queue_Reset(Queue_Instance_Struct_t* pQueueInstance)
 {
-    bool checkQueue = false;
-    if (pQueue->elementCount == pQueue->queueSize)
-    {
-        checkQueue = true;
-    }
-    return checkQueue;
+    ASSERT(IS_VALID_POINTER(pQueueInstance));
+
+    pQueueInstance->head = 0;
+    pQueueInstance ->tail = 0;
+    pQueueInstance->levelQueue = 0;
+    memset(&(pQueueInstance->pQueueElement[pQueueInstance->tail]),0,(pQueueInstance->elementSize)*(pQueueInstance->queueSize));
+
+    return QUEUE_OK;
 }
 
 /**
- * @brief  Increase the index of the back (used when data is enqueued by other means)
- * @param  pQueue: Pointer to a queue struct
- * @param  numOfElements: Number of elements to push, or was pushed
- * @retval None
+ * @brief function get callback function's address
+ * @param addressCallbackFunction Error code
+ * @return void
  */
-Queue_StatusTypeDef Queue_PushIndex(Queue_TypeDef *pQueue, const uint32_t numOfElements)
+Queue_Status_t Queue_UpdateAddressCallbackFunction(Error_CallbackFunction addressCallbackFunction)
 {
-    Queue_StatusTypeDef pushStatus = QUEUE_OK;
-    if ((pQueue->elementCount + numOfElements) > pQueue->queueSize)
-    {
-        pushStatus = QUEUE_ERROR_FULL;
-    }
-    else
-    {
-        pQueue->elementCount += numOfElements;
-        pQueue->queueBack = (pQueue->queueBack + numOfElements) % pQueue->queueSize;
-    }
-    return pushStatus;
+    pError = addressCallbackFunction;
+    return QUEUE_OK;
 }
 
-/**
- * @brief  Increase the index of the front (used when data is dequeued by other means)
- * @param  pQueue: Pointer to a queue struct
- * @param  numOfElements: Number of elements to pop, or was popped
- * @retval None
- */
-Queue_StatusTypeDef Queue_PopIndex(Queue_TypeDef *pQueue, const uint32_t numOfElements)
-{
-    Queue_StatusTypeDef popStatus = QUEUE_OK;
-    if (numOfElements > pQueue->elementCount)
-    {
-        popStatus = QUEUE_ERROR_EMPTY;
-    }
-    else
-    {
-        pQueue->elementCount -= numOfElements;
-        pQueue->queueFront = (pQueue->queueFront + numOfElements) % pQueue->queueSize;
-    }
-    return popStatus;
-}
+/************************************************************************************
+ * EOF
+ * *********************************************************************************/
 
-/**
- * @brief  Peek inside the front of queue
- * @param  pQueue; pointer to a queue struct
- * @retval Pointer the the first data byte of front
- */
-const uint8_t *Queue_PeekFront(const Queue_TypeDef *pQueue)
-{
-    const uint8_t *pPeek = NULL;
-    pPeek = &pQueue->queueBuffer[pQueue->queueFront * pQueue->elementSize];
-    return pPeek;
-}
-
-/**
- * @brief  Peek inside the back of queue
- * @param  pQueue; pointer to a queue struct
- * @retval Pointer the the first data byte of back
- */
-const uint8_t *Queue_PeekBack(const Queue_TypeDef *pQueue)
-{
-    const uint8_t *pPeek = NULL;
-    pPeek = &pQueue->queueBuffer[pQueue->queueBack * pQueue->elementSize];
-    return pPeek;
-}
-
-/******************************************************************************
- * End of file
- ******************************************************************************/

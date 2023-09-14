@@ -121,8 +121,8 @@ static void *Gyro_Simulation(void* arg)
         gyroData.acceY = sqrt(temp) * sin(alpha);
         gyroData.acceZ = sqrt(temp) * cos(alpha);
         gyroData.temp  = OFFSET_TEMP + AVG_TEMP * sin(alpha);
-        printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
-        printf("| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| ", temp,sqrt(temp),alpha,sin(alpha),cos(alpha));
+        //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
+        //printf("| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| ", temp,sqrt(temp),alpha,sin(alpha),cos(alpha));
         /* Unlock mutex */
         pthread_mutex_unlock(&mutexGyroData);
         /* Sleep */
