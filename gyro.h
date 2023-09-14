@@ -39,7 +39,7 @@ typedef struct __Gyro_ParamStruct
     double   acceX;                  /*>! x-axis acceleration */
     double   acceY;                  /*>! y-axis acceleration */
     double   acceZ;                  /*>! z-axis acceleration */
-    int16_t temp;                   /*>! Temperature in Celcius */
+    int16_t  temp;                   /*>! Temperature in Celcius */
 } __attribute__((packed)) Gyro_ParamsTypeDef;
 
 /**

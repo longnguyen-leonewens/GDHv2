@@ -63,7 +63,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
 {
     uint16_t crc    = 0u;
     uint16_t length = PACKAGE_SIZE - 2u;
-    uint16_t *pU16Temp = (uint16_t*)pFrame->ByteFrame;
+    uint8_t *pU8Temp = (uint8_t*)pFrame->ByteFrame;
     /* Check parameters */
     //assert(IS_VALID_POINTER(pFrame));
     //assert(IS_VALID_POINTER(pSensorData));
@@ -85,8 +85,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
     /* CRC Check */
     while (length)
    {
-       length--;
-       crc = crc ^ ((*(pU16Temp + PACKAGE_SIZE - 2U -length)) << 8u);
+       crc = crc ^ ((*(pU8Temp + PACKAGE_SIZE - 2U -length)) << 8u);
        for (uint8_t i = 0u; i < 8u; i++)
        {
            if (crc & 0x8000u)
@@ -98,9 +97,10 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
                crc = crc << 1u;
            }
        }
+       length--;
    }
-    pFrame->Fields.CRC[0] = ((crc&0xFF00)>>8);
-    pFrame->Fields.CRC[1] = (crc&0xFF);
+    pFrame->Fields.CRC[0] = (uint8_t)((crc&0xFF00)>>8);
+    pFrame->Fields.CRC[1] = (uint8_t)(crc&0xFF);
 
     return SUCCESS;
 }
@@ -140,7 +140,6 @@ ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
 ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
                                  Gyro_StringsTypeDef* pString)
 {
-    char    tempStr[16];
     uint8_t i;
     /* Convert */
     /* Version */
@@ -176,7 +175,7 @@ void GyroPackage_GetTime(uint8_t *pBuffer)
     /* Get time */
     time(&rawTime);
     timeRead = localtime(&rawTime);
-    for (uint8_t i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
     {
         pBuffer[i] = (uint8_t)(((int*)timeRead)[i]);
     }

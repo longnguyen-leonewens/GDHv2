@@ -59,6 +59,8 @@ uint8_t fifoBuffer[FIFO_SIZE][PACKAGE_SIZE];
 Queue_TypeDef gyroQueue;
 /* Gyroscope data struct */
 Gyro_ParamsTypeDef gyroData;
+/* Gyroscope data frame */
+Gyro_DataFrameTypeDef gyroPackage;
 /* Mutex pthread type for FIFO */
 pthread_mutex_t mutexFIFO;
 /* Condition variable for signaling data logging thread */
@@ -111,31 +113,44 @@ int main(void)
  */
 void* Application_DataHandling(void *arg)
 {
-    printf("\n-------------------------------------------------------------------------------------");
-    printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|", "Gyro X", "Gyro Y", "Gyro Z", "Acce X", "Acce Y", "Acce Z", "Temp","SimTemp","sqrt(temp)","alpha","sin(alpha)","cos(alpha)");
-    printf("\n-------------------------------------------------------------------------------------");
-    while(true)
+    int i = 5;
+    int count = 0;
+    // printf("\n-------------------------------------------------------------------------------------");
+    // printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|", "Gyro X", "Gyro Y", "Gyro Z", "Acce X", "Acce Y", "Acce Z", "Temp","SimTemp","sqrt(temp)","alpha","sin(alpha)","cos(alpha)");
+    // printf("\n-------------------------------------------------------------------------------------");
+    // printf("\n-------------------------------------------------------------------------------------");
+    printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|%-10s| Push or Pop| Index ",\
+             "Preamble", "Version", "Timestamp", "Gyro X", "Gyro Y", "Gyro Z","Acce X", "Acce Y", "Acce Z", "Temp","Reserved","Used","CRC");
+     printf("\n-------------------------------------------------------------------------------------");
+    while(i > 0)
     {
         /* Check if queue is not full yet to read data and push into FIFO */
         if (Queue_IsFull(&gyroQueue) == QUEUE_OK)
         {
             Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData, NULL);
-            //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
+            //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d| Main", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
             /* Package data */
-            //GyroPackage_Build();
+            GyroPackage_Build(&gyroPackage, &gyroData);
+            // printf("\n| %02X%02X%02X%02X%02X%02X%02X%02X%02X%016llX%016llX%016llX%016llX%016llX%016llX%04X%02X%02X%02X%02X%02X|",
+            // gyroPackage.Fields.Preamble[0],gyroPackage.Fields.Preamble[1],gyroPackage.Fields.PackageVer,gyroPackage.Fields.Timestamp[0],gyroPackage.Fields.Timestamp[1],gyroPackage.Fields.Timestamp[2],gyroPackage.Fields.Timestamp[3],gyroPackage.Fields.Timestamp[4],gyroPackage.Fields.Timestamp[5],
+            // gyroPackage.Fields.Data.axisX,gyroPackage.Fields.Data.axisY,gyroPackage.Fields.Data.axisZ,gyroPackage.Fields.Data.acceX,gyroPackage.Fields.Data.acceY,gyroPackage.Fields.Data.acceZ,(uint16_t)gyroPackage.Fields.Data.temp,
+            // gyroPackage.Fields.Reserved[0],gyroPackage.Fields.Reserved[1],gyroPackage.Fields.Used,gyroPackage.Fields.CRC[0],gyroPackage.Fields.CRC[1]);
             /* Lock mutex */
+            printf("\n| %02X | %02X| %02X| %02X|%02X| %02X| %02X|%02X|%02X| %f | %f |%f |%f |%f |%f |%d| %02X| %02X| %02X| %02X| %02X| %s| %d ",\
+            gyroPackage.Fields.Preamble[0],gyroPackage.Fields.Preamble[1],gyroPackage.Fields.PackageVer,gyroPackage.Fields.Timestamp[0],gyroPackage.Fields.Timestamp[1],gyroPackage.Fields.Timestamp[2],gyroPackage.Fields.Timestamp[3],gyroPackage.Fields.Timestamp[4],gyroPackage.Fields.Timestamp[5],\
+            gyroPackage.Fields.Data.axisX,gyroPackage.Fields.Data.axisY,gyroPackage.Fields.Data.axisZ,gyroPackage.Fields.Data.acceX,gyroPackage.Fields.Data.acceY,gyroPackage.Fields.Data.acceZ,(uint16_t)gyroPackage.Fields.Data.temp,\
+            gyroPackage.Fields.Reserved[0],gyroPackage.Fields.Reserved[1],gyroPackage.Fields.Used,gyroPackage.Fields.CRC[0],gyroPackage.Fields.CRC[1], "Push", ++count);
             pthread_mutex_lock(&mutexFIFO);
             /* Enqueue data */
-            //Queue_Push(&gyroQueue,);
+            Queue_Push(&gyroQueue, (uint8_t*)&gyroPackage, PACKAGE_SIZE);
             /* Unlock mutex */
             pthread_mutex_unlock(&mutexFIFO);
+            i--;
         }
         /* Check if queue is not empty yet to signal another thread to pop data */
-        if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
-        {
-            //pthread_cond_signal();
-        }
     }
+    
+    return NULL;
 }
 
 /**
@@ -145,13 +160,28 @@ void* Application_DataHandling(void *arg)
  */
 void* Application_DataLogging(void *arg)
 {
-    while(true)
+    int i = 5;
+    int count = 0;
+    uint8_t dataBuffer[64U];
+    Gyro_DataFrameTypeDef *testFrame;
+    while(i > 0)
     {
-        /* Lock mutex */
-        pthread_mutex_lock(&mutexFIFO);
-        /* Unlock mutex */
-        pthread_mutex_unlock(&mutexFIFO);
+        if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
+        {
+            /* Lock mutex */
+            pthread_mutex_lock(&mutexFIFO);
+            Queue_Pop(&gyroQueue, dataBuffer, PACKAGE_SIZE);
+            testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;
+            printf("\n| %02X | %02X| %02X| %02X|%02X| %02X| %02X|%02X|%02X| %f | %f |%f |%f |%f |%f |%d| %02X| %02X| %02X| %02X| %02X| %s| %d ",\
+            testFrame->Fields.Preamble[0],testFrame->Fields.Preamble[1],testFrame->Fields.PackageVer,testFrame->Fields.Timestamp[0],testFrame->Fields.Timestamp[1],testFrame->Fields.Timestamp[2],testFrame->Fields.Timestamp[3],testFrame->Fields.Timestamp[4],testFrame->Fields.Timestamp[5],\
+            testFrame->Fields.Data.axisX,testFrame->Fields.Data.axisY,testFrame->Fields.Data.axisZ,testFrame->Fields.Data.acceX,testFrame->Fields.Data.acceY,testFrame->Fields.Data.acceZ,(uint16_t)testFrame->Fields.Data.temp,\
+            testFrame->Fields.Reserved[0],testFrame->Fields.Reserved[1],testFrame->Fields.Used,testFrame->Fields.CRC[0],testFrame->Fields.CRC[1], "Pop", ++count);
+            /* Unlock mutex */
+            pthread_mutex_unlock(&mutexFIFO);
+            i--;
+        }
     }
+    return NULL;
 }
 
 /******************************************************************************

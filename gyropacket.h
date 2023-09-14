@@ -122,12 +122,7 @@ ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
  * @return Error status
  */
 ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
-                                       Gyro_DataFrameTypeDef* pFrame)
-{
-    memcpy(pFrame->ByteFrame, array, PACKAGE_SIZE);
-    return SUCCESS;
-}
-
+                                       Gyro_DataFrameTypeDef* pFrame);
 /**
 * @brief  Convert package to struct of strings used for printing, interface
  * @param pFrame pointer to package struct
