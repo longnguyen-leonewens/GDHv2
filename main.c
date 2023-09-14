@@ -38,6 +38,20 @@
  * PRIVATE CONSTANTS
  ******************************************************************************/
 
+/* ########################## Tesing Selection ############################## */
+/**
+  * @brief Uncomment the line below to include the testing code
+  */
+#define TESTING
+
+#ifdef TESTING
+//#define TEST_GYROSCOPE_READ_DATA
+//#define TEST_GYROSCOPE_PACKAGE
+//#define TEST_GYROSCOPE_PACKAGE_HEX
+//#define TEST_QUEUE_PUSH_AND_POP
+//#define TEST_FLASH_WRITE
+#endif
+
 /** @defgroup FIFO Configurations
  * @{
  */
@@ -92,7 +106,14 @@ int main(void)
     /* Create threads for handling gyrocope data and logging to FLASH */
     pthread_t threadDataHandling;
     pthread_t threadDataLogging;
-
+#ifdef TESTING
+    printf( "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"\
+            "| Preamble | Version |       Timestamp      "\
+            "|  Gyro X  |  Gyro Y  |  Gyro Z  "\
+            "|  Acce X  |  Acce Y  |  Acce Z  "\
+            "| Temp | Reserved | Used | CRC  | Testing | Index |\n"\
+            "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+#endif
     pthread_create(&threadDataHandling, NULL, Application_DataHandling, NULL);
     pthread_create(&threadDataLogging , NULL, Application_DataLogging , NULL);
     /* Join threads to prevent this thread ends */
@@ -113,43 +134,75 @@ int main(void)
  */
 void* Application_DataHandling(void *arg)
 {
-    int i = 5;
-    int count = 0;
-    // printf("\n-------------------------------------------------------------------------------------");
-    // printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|", "Gyro X", "Gyro Y", "Gyro Z", "Acce X", "Acce Y", "Acce Z", "Temp","SimTemp","sqrt(temp)","alpha","sin(alpha)","cos(alpha)");
-    // printf("\n-------------------------------------------------------------------------------------");
-    // printf("\n-------------------------------------------------------------------------------------");
-    printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|%-10s| Push or Pop| Index ",\
-             "Preamble", "Version", "Timestamp", "Gyro X", "Gyro Y", "Gyro Z","Acce X", "Acce Y", "Acce Z", "Temp","Reserved","Used","CRC");
-     printf("\n-------------------------------------------------------------------------------------");
-    while(i > 0)
+#ifdef TEST_QUEUE_PUSH_AND_POP
+    uint32_t pushCount = 0;
+#endif
+    while(true)
     {
         /* Check if queue is not full yet to read data and push into FIFO */
         if (Queue_IsFull(&gyroQueue) == QUEUE_OK)
         {
             Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData, NULL);
-            //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d| Main", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
+
+#ifdef TEST_GYROSCOPE_READ_DATA
+            printf("                                            | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|                        |  Read   |\n",\
+            gyroData.axisX, gyroData.axisY, gyroData.axisZ,\
+            gyroData.acceX, gyroData.acceY, gyroData.acceZ, gyroData.temp);
+#endif
             /* Package data */
             GyroPackage_Build(&gyroPackage, &gyroData);
-            // printf("\n| %02X%02X%02X%02X%02X%02X%02X%02X%02X%016llX%016llX%016llX%016llX%016llX%016llX%04X%02X%02X%02X%02X%02X|",
-            // gyroPackage.Fields.Preamble[0],gyroPackage.Fields.Preamble[1],gyroPackage.Fields.PackageVer,gyroPackage.Fields.Timestamp[0],gyroPackage.Fields.Timestamp[1],gyroPackage.Fields.Timestamp[2],gyroPackage.Fields.Timestamp[3],gyroPackage.Fields.Timestamp[4],gyroPackage.Fields.Timestamp[5],
-            // gyroPackage.Fields.Data.axisX,gyroPackage.Fields.Data.axisY,gyroPackage.Fields.Data.axisZ,gyroPackage.Fields.Data.acceX,gyroPackage.Fields.Data.acceY,gyroPackage.Fields.Data.acceZ,(uint16_t)gyroPackage.Fields.Data.temp,
-            // gyroPackage.Fields.Reserved[0],gyroPackage.Fields.Reserved[1],gyroPackage.Fields.Used,gyroPackage.Fields.CRC[0],gyroPackage.Fields.CRC[1]);
+
+#ifdef TEST_GYROSCOPE_PACKAGE_HEX
+            printf("\n| %02X%02X%02X%02X%02X%02X%02X%02X%02X%016llX%016llX%016llX%016llX%016llX%016llX%04X%02X%02X%02X | %02X%02X |     Package as HEX for Memory or CRC Check",
+            gyroPackage.Fields.Preamble[0], gyroPackage.Fields.Preamble[1],\
+            gyroPackage.Fields.PackageVer,\
+            gyroPackage.Fields.Timestamp[0], gyroPackage.Fields.Timestamp[1], gyroPackage.Fields.Timestamp[2],\
+            gyroPackage.Fields.Timestamp[3], gyroPackage.Fields.Timestamp[4], gyroPackage.Fields.Timestamp[5],
+            (uint64_t)gyroPackage.Fields.Data.axisX, (uint64_t)gyroPackage.Fields.Data.axisY, (uint64_t)gyroPackage.Fields.Data.axisZ,\
+            (uint64_t)gyroPackage.Fields.Data.acceX, (uint64_t)gyroPackage.Fields.Data.acceY, (uint64_t)gyroPackage.Fields.Data.acceZ,\
+            (uint16_t)gyroPackage.Fields.Data.temp,
+            gyroPackage.Fields.Reserved[0], gyroPackage.Fields.Reserved[1],\
+            gyroPackage.Fields.Used,\
+            gyroPackage.Fields.CRC[0], gyroPackage.Fields.CRC[1]);
+#endif
+
+#ifdef TEST_GYROSCOPE_PACKAGE
+            printf("|   %02X%02X   |    %02X   | %02d:%02d:%02d  %02d/%02d/%04d | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|   %02X%02X   |  %02X  | %02X%02X | %-7s |\n",\
+            gyroPackage.Fields.Preamble[0], gyroPackage.Fields.Preamble[1],\
+            gyroPackage.Fields.PackageVer,\
+            gyroPackage.Fields.Timestamp[2], gyroPackage.Fields.Timestamp[1], gyroPackage.Fields.Timestamp[0],\
+            gyroPackage.Fields.Timestamp[3], gyroPackage.Fields.Timestamp[4], gyroPackage.Fields.Timestamp[5] + 1900,\
+            gyroPackage.Fields.Data.axisX, gyroPackage.Fields.Data.axisY, gyroPackage.Fields.Data.axisZ,\
+            gyroPackage.Fields.Data.acceX, gyroPackage.Fields.Data.acceY, gyroPackage.Fields.Data.acceZ,\
+            gyroPackage.Fields.Data.temp,\
+            gyroPackage.Fields.Reserved[0], gyroPackage.Fields.Reserved[1],\
+            gyroPackage.Fields.Used,\
+            gyroPackage.Fields.CRC[0], gyroPackage.Fields.CRC[1],\
+            "Package");
+#endif
             /* Lock mutex */
-            printf("\n| %02X | %02X| %02X| %02X|%02X| %02X| %02X|%02X|%02X| %f | %f |%f |%f |%f |%f |%d| %02X| %02X| %02X| %02X| %02X| %s| %d ",\
-            gyroPackage.Fields.Preamble[0],gyroPackage.Fields.Preamble[1],gyroPackage.Fields.PackageVer,gyroPackage.Fields.Timestamp[0],gyroPackage.Fields.Timestamp[1],gyroPackage.Fields.Timestamp[2],gyroPackage.Fields.Timestamp[3],gyroPackage.Fields.Timestamp[4],gyroPackage.Fields.Timestamp[5],\
-            gyroPackage.Fields.Data.axisX,gyroPackage.Fields.Data.axisY,gyroPackage.Fields.Data.axisZ,gyroPackage.Fields.Data.acceX,gyroPackage.Fields.Data.acceY,gyroPackage.Fields.Data.acceZ,(uint16_t)gyroPackage.Fields.Data.temp,\
-            gyroPackage.Fields.Reserved[0],gyroPackage.Fields.Reserved[1],gyroPackage.Fields.Used,gyroPackage.Fields.CRC[0],gyroPackage.Fields.CRC[1], "Push", ++count);
             pthread_mutex_lock(&mutexFIFO);
             /* Enqueue data */
             Queue_Push(&gyroQueue, (uint8_t*)&gyroPackage, PACKAGE_SIZE);
+#ifdef  TEST_QUEUE_PUSH_AND_POP
+            printf("|   %02X%02X   |    %02X   | %02d:%02d:%02d  %02d/%02d/%04d | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|   %02X%02X   |  %02X  | %02X%02X | %-7s | %5d |\n",\
+            gyroPackage.Fields.Preamble[0], gyroPackage.Fields.Preamble[1],\
+            gyroPackage.Fields.PackageVer,\
+            gyroPackage.Fields.Timestamp[2], gyroPackage.Fields.Timestamp[1], gyroPackage.Fields.Timestamp[0],\
+            gyroPackage.Fields.Timestamp[3], gyroPackage.Fields.Timestamp[4], gyroPackage.Fields.Timestamp[5] + 1900,\
+            gyroPackage.Fields.Data.axisX, gyroPackage.Fields.Data.axisY, gyroPackage.Fields.Data.axisZ,\
+            gyroPackage.Fields.Data.acceX, gyroPackage.Fields.Data.acceY, gyroPackage.Fields.Data.acceZ,\
+            gyroPackage.Fields.Data.temp,\
+            gyroPackage.Fields.Reserved[0], gyroPackage.Fields.Reserved[1],\
+            gyroPackage.Fields.Used,\
+            gyroPackage.Fields.CRC[0], gyroPackage.Fields.CRC[1],\
+            "Push", ++pushCount);
+#endif
             /* Unlock mutex */
             pthread_mutex_unlock(&mutexFIFO);
-            i--;
         }
         /* Check if queue is not empty yet to signal another thread to pop data */
     }
-    
     return NULL;
 }
 
@@ -160,11 +213,12 @@ void* Application_DataHandling(void *arg)
  */
 void* Application_DataLogging(void *arg)
 {
-    int i = 5;
-    int count = 0;
     uint8_t dataBuffer[64U];
     Gyro_DataFrameTypeDef *testFrame;
-    while(i > 0)
+#ifdef TEST_QUEUE_PUSH_AND_POP
+    uint32_t popCount = 0;
+#endif
+    while(true)
     {
         if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
         {
@@ -172,13 +226,22 @@ void* Application_DataLogging(void *arg)
             pthread_mutex_lock(&mutexFIFO);
             Queue_Pop(&gyroQueue, dataBuffer, PACKAGE_SIZE);
             testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;
-            printf("\n| %02X | %02X| %02X| %02X|%02X| %02X| %02X|%02X|%02X| %f | %f |%f |%f |%f |%f |%d| %02X| %02X| %02X| %02X| %02X| %s| %d ",\
-            testFrame->Fields.Preamble[0],testFrame->Fields.Preamble[1],testFrame->Fields.PackageVer,testFrame->Fields.Timestamp[0],testFrame->Fields.Timestamp[1],testFrame->Fields.Timestamp[2],testFrame->Fields.Timestamp[3],testFrame->Fields.Timestamp[4],testFrame->Fields.Timestamp[5],\
-            testFrame->Fields.Data.axisX,testFrame->Fields.Data.axisY,testFrame->Fields.Data.axisZ,testFrame->Fields.Data.acceX,testFrame->Fields.Data.acceY,testFrame->Fields.Data.acceZ,(uint16_t)testFrame->Fields.Data.temp,\
-            testFrame->Fields.Reserved[0],testFrame->Fields.Reserved[1],testFrame->Fields.Used,testFrame->Fields.CRC[0],testFrame->Fields.CRC[1], "Pop", ++count);
+#ifdef TEST_QUEUE_PUSH_AND_POP
+            printf("|   %02X%02X   |    %02X   | %02d:%02d:%02d  %02d/%02d/%04d | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|   %02X%02X   |  %02X  | %02X%02X | %-7s | %5d |\n",\
+            testFrame->Fields.Preamble[0], testFrame->Fields.Preamble[1],\
+            testFrame->Fields.PackageVer,\
+            testFrame->Fields.Timestamp[2], testFrame->Fields.Timestamp[1], testFrame->Fields.Timestamp[0],\
+            testFrame->Fields.Timestamp[3], testFrame->Fields.Timestamp[4], testFrame->Fields.Timestamp[5] + 1900,\
+            testFrame->Fields.Data.axisX, testFrame->Fields.Data.axisY, testFrame->Fields.Data.axisZ,\
+            testFrame->Fields.Data.acceX, testFrame->Fields.Data.acceY, testFrame->Fields.Data.acceZ,\
+            testFrame->Fields.Data.temp,\
+            testFrame->Fields.Reserved[0], testFrame->Fields.Reserved[1],\
+            testFrame->Fields.Used,\
+            testFrame->Fields.CRC[0], testFrame->Fields.CRC[1],\
+            "Pop", ++popCount);
+#endif
             /* Unlock mutex */
             pthread_mutex_unlock(&mutexFIFO);
-            i--;
         }
     }
     return NULL;
