@@ -35,14 +35,14 @@ Error_CallbackFunction pError;
  * @param bufferQueue    buffer used as a queue
  * @param sizeQueue      number of element of queue
  * @param sizeElement    size of data element
- * @return Queue_Status_t- status of function
+ * @return Queue_StatusTypeDef- status of function
  */
-Queue_Status_t Queue_Init(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Init(Queue_TypeDef* pQueueInstance,
                           uint8_t* bufferQueue,
                           uint8_t sizeQueue,
                           uint16_t sizeElement)
 {
-    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(bufferQueue));
+    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(bufferQueue));
 
     pQueueInstance->pQueueElement = bufferQueue;
     pQueueInstance->elementSize   = sizeElement;
@@ -57,12 +57,12 @@ Queue_Status_t Queue_Init(Queue_Instance_Struct_t* pQueueInstance,
 /**
  * @brief Function is used to check queue full or not
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t- status of function
+ * @return Queue_StatusTypeDef- status of function
  */
-Queue_Status_t Queue_IsFull(Queue_Instance_Struct_t* pQueueInstance)
+Queue_StatusTypeDef Queue_IsFull(Queue_TypeDef* pQueueInstance)
 {
-    Queue_Status_t retVal = QUEUE_OK;
-    ASSERT(IS_VALID_POINTER(pQueueInstance));
+    Queue_StatusTypeDef retVal = QUEUE_OK;
+    assert(IS_VALID_POINTER(pQueueInstance));
 
     if (pQueueInstance->levelQueue == pQueueInstance->queueSize)
     {
@@ -75,12 +75,12 @@ Queue_Status_t Queue_IsFull(Queue_Instance_Struct_t* pQueueInstance)
 /**
  * @brief Function is used to check queue empty or not
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t - status of function
+ * @return Queue_StatusTypeDef - status of function
  */
-Queue_Status_t Queue_IsEmpty(Queue_Instance_Struct_t* pQueueInstance)
+Queue_StatusTypeDef Queue_IsEmpty(Queue_TypeDef* pQueueInstance)
 {
-    Queue_Status_t retVal = QUEUE_OK;
-    ASSERT(IS_VALID_POINTER(pQueueInstance));
+    Queue_StatusTypeDef retVal = QUEUE_OK;
+    assert(IS_VALID_POINTER(pQueueInstance));
 
     if (pQueueInstance->levelQueue == 0)
     {
@@ -95,14 +95,14 @@ Queue_Status_t Queue_IsEmpty(Queue_Instance_Struct_t* pQueueInstance)
  * @param pQueueInstance   pointer to a queue struct
  * @param pPushData        pointer to data needs pushed to the queue
  * @param lengthDataPush   length of data for push to queue struct
- * @return Queue_Status_t  status of function
+ * @return Queue_StatusTypeDef  status of function
  */
-Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Push(Queue_TypeDef* pQueueInstance,
                           uint8_t* pPushData,
                           uint16_t lengthDataPush)
 {
-    Queue_Status_t retVal = QUEUE_OK;
-    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPushData));
+    Queue_StatusTypeDef retVal = QUEUE_OK;
+    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPushData));
 
     if (pQueueInstance->levelQueue != pQueueInstance->queueSize)
     {
@@ -124,14 +124,14 @@ Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
  * @param pQueueInstance pointer to a queue struct
  * @param pPopData       pointer to data popped from the queue
  * @param lengthDataPop  the length of data to be pop from the queue
- * @return Queue_Status_t - status of function 
+ * @return Queue_StatusTypeDef - status of function 
  */
-Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
                          uint8_t* pPopData,
                          uint16_t lengthDataPop)
 {
-    Queue_Status_t retVal = QUEUE_OK;
-    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPopData));
+    Queue_StatusTypeDef retVal = QUEUE_OK;
+    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPopData));
 
     if (pQueueInstance->levelQueue != 0)
     {
@@ -153,13 +153,13 @@ Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
  * @brief Function is used to get the available length of the queue
  * @param pQueueInstance pointer to a queue struct
  * @param pAvaibleLength pointer to the number of available length of the queue
- * @return Queue_Status_t - status of function 
+ * @return Queue_StatusTypeDef - status of function 
  */
-Queue_Status_t Queue_GetAvailableLength(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
                                        uint8_t* pAvailableLength)
 {
-    Queue_Status_t retVal = QUEUE_OK;
-    ASSERT(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pAvailableLength));
+    Queue_StatusTypeDef retVal = QUEUE_OK;
+    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pAvailableLength));
 
     *pAvailableLength = pQueueInstance->queueSize - pQueueInstance->levelQueue;
 
@@ -170,11 +170,11 @@ Queue_Status_t Queue_GetAvailableLength(Queue_Instance_Struct_t* pQueueInstance,
 /**
  * @brief Function is used to reset queue
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t - status of function 
+ * @return Queue_StatusTypeDef - status of function 
  */
-Queue_Status_t Queue_Reset(Queue_Instance_Struct_t* pQueueInstance)
+Queue_StatusTypeDef Queue_Reset(Queue_TypeDef* pQueueInstance)
 {
-    ASSERT(IS_VALID_POINTER(pQueueInstance));
+    assert(IS_VALID_POINTER(pQueueInstance));
 
     pQueueInstance->head = 0;
     pQueueInstance ->tail = 0;
@@ -189,7 +189,7 @@ Queue_Status_t Queue_Reset(Queue_Instance_Struct_t* pQueueInstance)
  * @param addressCallbackFunction Error code
  * @return void
  */
-Queue_Status_t Queue_UpdateAddressCallbackFunction(Error_CallbackFunction addressCallbackFunction)
+Queue_StatusTypeDef Queue_UpdateAddressCallbackFunction(Error_CallbackFunction addressCallbackFunction)
 {
     pError = addressCallbackFunction;
     return QUEUE_OK;

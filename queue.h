@@ -28,7 +28,7 @@ typedef struct Queue_Instance
     uint8_t  levelQueue;
     uint8_t  head;
     uint8_t  tail;
-}Queue_Instance_Struct_t;
+}Queue_TypeDef;
 
 /**
  * @brief Status of queue struct
@@ -38,10 +38,10 @@ typedef enum Queue_Status {
     QUEUE_EMPTY,
     QUEUE_FAIL,
     QUEUE_OK
-}Queue_Status_t;
+}Queue_StatusTypeDef;
 
 
-typedef void(*Error_CallbackFunction)(Queue_Status_t);
+typedef void(*Error_CallbackFunction)(Queue_StatusTypeDef);
 
 /*******************************************************************************
 * API
@@ -53,9 +53,9 @@ typedef void(*Error_CallbackFunction)(Queue_Status_t);
  * @param bufferQueue    buffer used as a queue
  * @param sizeQueue      number of element of queue
  * @param sizeElement    size of data element
- * @return Queue_Status_t- status of function
+ * @return Queue_StatusTypeDef- status of function
  */
-Queue_Status_t Queue_Init(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Init(Queue_TypeDef* pQueueInstance,
                           uint8_t* bufferQueue,
                           uint8_t sizeQueue,
                           uint16_t sizeElement);
@@ -63,25 +63,25 @@ Queue_Status_t Queue_Init(Queue_Instance_Struct_t* pQueueInstance,
 /**
  * @brief Function is used to check queue full or not
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t- status of function
+ * @return Queue_StatusTypeDef- status of function
  */
-Queue_Status_t Queue_IsFull(Queue_Instance_Struct_t* pQueueInstance);
+Queue_StatusTypeDef Queue_IsFull(Queue_TypeDef* pQueueInstance);
 
 /**
  * @brief Function is used to check queue empty or not
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t - status of function
+ * @return Queue_StatusTypeDef - status of function
  */
-Queue_Status_t Queue_IsEmpty(Queue_Instance_Struct_t* pQueueInstance);
+Queue_StatusTypeDef Queue_IsEmpty(Queue_TypeDef* pQueueInstance);
 
 /**
  * @brief Function is used to push data to queue
  * @param pQueueInstance   pointer to a queue struct
  * @param pPushData        pointer to data needs pushed to the queue
  * @param lengthDataPush   length of data for push to queue struct
- * @return Queue_Status_t  status of function
+ * @return Queue_StatusTypeDef  status of function
  */
-Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Push(Queue_TypeDef* pQueueInstance,
                           uint8_t* pPushData,
                           uint16_t lengthDataPush);
 
@@ -90,9 +90,9 @@ Queue_Status_t Queue_Push(Queue_Instance_Struct_t* pQueueInstance,
  * @param pQueueInstance pointer to a queue struct
  * @param pPopData       pointer to data popped from the queue
  * @param lengthDataPop  the length of data to be pop from the queue
- * @return Queue_Status_t - status of function
+ * @return Queue_StatusTypeDef - status of function
  */
-Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
                          uint8_t* pPopData,
                          uint16_t lengthDataPop);
 
@@ -100,24 +100,24 @@ Queue_Status_t Queue_Pop(Queue_Instance_Struct_t* pQueueInstance,
  * @brief Function is used to get the available length of the queue
  * @param pQueueInstance pointer to a queue struct
  * @param pAvaibleLength pointer to the number of available length of the queue
- * @return Queue_Status_t - status of function
+ * @return Queue_StatusTypeDef - status of function
  */
-Queue_Status_t Queue_GetAvailableLength(Queue_Instance_Struct_t* pQueueInstance,
+Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
                                        uint8_t* pAvailableLength);
 
 /**
  * @brief Function is used to reset queue
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_Status_t - status of function
+ * @return Queue_StatusTypeDef - status of function
  */
-Queue_Status_t Queue_Reset(Queue_Instance_Struct_t* pQueueInstance);
+Queue_StatusTypeDef Queue_Reset(Queue_TypeDef* pQueueInstance);
 
 /**
  * @brief function get callback function's address
  * @param addressCallbackFunction Error code
  * @return void
  */
-Queue_Status_t Queue_UpdateAddressCallbackFunction(Error_CallbackFunction addressCallbackFunction);
+Queue_StatusTypeDef Queue_UpdateAddressCallbackFunction(Error_CallbackFunction addressCallbackFunction);
 
 #endif /*QUEUE_H_*/
 

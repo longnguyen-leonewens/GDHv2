@@ -54,7 +54,7 @@
  * PRIVATE VARIABLES
  ******************************************************************************/
 /* FIFO Buffer for storing gyroscope data packet */
-uint8_t fifoBuffer[PACKAGE_SIZE][FIFO_SIZE];
+uint8_t fifoBuffer[FIFO_SIZE][PACKAGE_SIZE];
 /* Package queue struct */
 Queue_TypeDef gyroQueue;
 /* Gyroscope data struct */
@@ -82,7 +82,7 @@ int main(void)
     /* Initialize peripherals and modules */
     Gyro_Init();
     //Flash_Init();
-    Queue_Init(&gyroQueue, (uint8_t*)fifoBuffer, PACKAGE_SIZE, FIFO_SIZE);
+    Queue_Init(&gyroQueue, (uint8_t*)fifoBuffer, FIFO_SIZE, PACKAGE_SIZE);
     /* Init mutex for pushing and popping FIFO */
     pthread_mutex_init(&mutexFIFO, NULL);
     /* Init condition variable for thread signaling */
@@ -117,7 +117,7 @@ void* Application_DataHandling(void *arg)
     while(true)
     {
         /* Check if queue is not full yet to read data and push into FIFO */
-        if (Queue_IsFull(&gyroQueue) == false)
+        if (Queue_IsFull(&gyroQueue) == QUEUE_OK)
         {
             Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData, NULL);
             //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
@@ -126,12 +126,12 @@ void* Application_DataHandling(void *arg)
             /* Lock mutex */
             pthread_mutex_lock(&mutexFIFO);
             /* Enqueue data */
-            //Queue_Enqueue(&gyroQueue,    ,     );
+            //Queue_Push(&gyroQueue,);
             /* Unlock mutex */
             pthread_mutex_unlock(&mutexFIFO);
         }
         /* Check if queue is not empty yet to signal another thread to pop data */
-        if (Queue_IsEmpty(&gyroQueue) == false)
+        if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
         {
             //pthread_cond_signal();
         }
