@@ -28,6 +28,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <math.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <unistd.h>
 /******************************************************************************
