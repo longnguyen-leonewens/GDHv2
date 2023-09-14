@@ -42,7 +42,6 @@
  * @{
  */
 #define FIFO_SIZE                        (16U)
-#define PACKAGE_SIZE                     (70U)
 /**
  * @}
  */
@@ -67,8 +66,8 @@ pthread_cond_t condNotifyThread;
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
-void Application_DataHandling(void *arg);
-void Application_DataLogging(void *arg);
+void* Application_DataHandling(void *arg);
+void* Application_DataLogging(void *arg);
 /******************************************************************************
  * PRIVATE FUNCTIONS
  ******************************************************************************/
@@ -83,7 +82,7 @@ int main(void)
     /* Initialize peripherals and modules */
     Gyro_Init();
     //Flash_Init();
-    Queue_Init(&gyroQueue, fifoBuffer, PACKAGE_SIZE, FIFO_SIZE);
+    Queue_Init(&gyroQueue, (uint8_t*)fifoBuffer, PACKAGE_SIZE, FIFO_SIZE);
     /* Init mutex for pushing and popping FIFO */
     pthread_mutex_init(&mutexFIFO, NULL);
     /* Init condition variable for thread signaling */
@@ -110,14 +109,18 @@ int main(void)
  * @param  arg Optional argument
  * @retval None
  */
-void Application_DataHandling(void *arg)
+void* Application_DataHandling(void *arg)
 {
+    printf("\n-------------------------------------------------------------------------------------");
+    printf("\n| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s| %-10s|", "Gyro X", "Gyro Y", "Gyro Z", "Acce X", "Acce Y", "Acce Z", "Temp","SimTemp","sqrt(temp)","alpha","sin(alpha)","cos(alpha)");
+    printf("\n-------------------------------------------------------------------------------------");
     while(true)
     {
         /* Check if queue is not full yet to read data and push into FIFO */
         if (Queue_IsFull(&gyroQueue) == false)
         {
-            Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData);
+            Gyro_ReadData(GYRO_READ_ALL, (double*)&gyroData, NULL);
+            //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
             /* Package data */
             //GyroPackage_Build();
             /* Lock mutex */
@@ -130,7 +133,7 @@ void Application_DataHandling(void *arg)
         /* Check if queue is not empty yet to signal another thread to pop data */
         if (Queue_IsEmpty(&gyroQueue) == false)
         {
-            pthread_cond_signal();
+            //pthread_cond_signal();
         }
     }
 }
@@ -140,7 +143,7 @@ void Application_DataHandling(void *arg)
  * @param  arg Optional argument
  * @retval None
  */
-void Application_DataLogging(void *arg)
+void* Application_DataLogging(void *arg)
 {
     while(true)
     {

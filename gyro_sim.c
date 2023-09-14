@@ -37,7 +37,7 @@ typedef struct __GyroSim_ParamStruct
     double   acceX;                  /*>! x-axis acceleration */
     double   acceY;                  /*>! y-axis acceleration */
     double   acceZ;                  /*>! z-axis acceleration */
-    uint16_t temp;                   /*>! Temperature in Celcius */
+    int16_t temp;                   /*>! Temperature in Celcius */
 }GyroSim_ParamsTypeDef;
 
 /******************************************************************************
@@ -56,7 +56,7 @@ typedef struct __GyroSim_ParamStruct
 /** @defgroup Misc
  * @{
  */
-#define M_PI            (3.14159265358979323846)
+#define PI            (3.14159265358979323846)
 /**
  * @}
  */
@@ -80,6 +80,7 @@ static GyroSim_ParamsTypeDef gyroData;       /* Struct to hold simulation data *
 static pthread_t             threadGyro;     /* For Gyroscope thread */
 static pthread_mutex_t       mutexGyroData;  /* Mutex for Gyroscope data */
 static bool                  isRunning;      /* For controlling the thread */
+static uint32_t              generateFreq;   /* Data generating frequency */
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
@@ -98,7 +99,7 @@ static void *Gyro_Simulation(void* arg)
     uint32_t simFrequency = DEFAULT_FREQUENCY;
     double time  = 0;
     double temp  = 0;
-    double alpha = 0;
+    double alpha = PI/3;
     /* Check if frequency is passed as an argument */
     if (arg != NULL)
     {
@@ -117,18 +118,21 @@ static void *Gyro_Simulation(void* arg)
         /* Randomly generate accelerations */
         gyroData.acceX = (double)rand()/RAND_MAX * 2 * GRAVITY_ACCE - GRAVITY_ACCE;
         temp           = GRAVITY_ACCE * GRAVITY_ACCE - (gyroData.acceX) * (gyroData.acceX);
-        alpha          = 2 * M_PI * simFrequency * time;
-        gyroData.acceY = sqrt(temp) * sin(alpha);
-        gyroData.acceZ = sqrt(temp) * cos(alpha);
+        gyroData.acceY = sqrt(temp) * sin(PI/3);
+        gyroData.acceZ = sqrt(temp) * cos(PI/3);
         gyroData.temp  = OFFSET_TEMP + AVG_TEMP * sin(alpha);
+        printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
+        printf("| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| ", temp,sqrt(temp),alpha,sin(alpha),cos(alpha));
         /* Unlock mutex */
         pthread_mutex_unlock(&mutexGyroData);
         /* Sleep */
         usleep((1.0/simFrequency) * 1e6);
         time = time + 1.0/simFrequency;
+        alpha = alpha + PI/6;
     }
     /* End the thread */
     pthread_exit(NULL);
+    return NULL;
 }
 
 /**
@@ -148,7 +152,8 @@ StatusTypeDef GyroSim_StartSimulation(uint32_t simFrequency)
     gyroData.acceZ = 0;
     gyroData.temp  = 0;
     /* Start gyro simulation thread */
-    if (pthread_create(&threadGyro, NULL, Gyro_Simulation, (void *)&simFrequency) != 0)
+    generateFreq = simFrequency;
+    if (pthread_create(&threadGyro, NULL, Gyro_Simulation, (void *)&generateFreq) != 0)
     {
         startState = ERROR;
     }
@@ -176,7 +181,7 @@ StatusTypeDef GyroSim_StopSimulation(void)
  * @param  pData Pointer to data buffer to hold data read
  * @retval StatusTypeDef Error status
  */
-StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, uint16_t *pTemp)
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp)
 {
     double       *pTempData  = (double*)&gyroData;
     uint8_t       i          = 0;
@@ -194,15 +199,13 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, uint16_t *pTem
     else if (readOption == SIMULATOR_READ_ALL)
     {
         /* Check parameter */
-        assert(IS_VALID_POINTER(pTemp));
         assert(IS_VALID_POINTER(pData));
         /* Read gyroscope stats */
         for (i = 0; i < 6; i++)
         {
             pData[i] = pTempData[i];
         }
-        /* Read temperature */
-        *pTemp = gyroData.temp;
+        *((uint16_t*)&pData[6]) = gyroData.temp;
     }
     else
     {

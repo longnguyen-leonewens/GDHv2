@@ -97,7 +97,7 @@ DRV_StatusTypeDef Gyro_DeInit(void)
  * @param  pData Pointer to data buffer for storing values
  * @return DRV_StatusTypeDef Error status
  */
-DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double*pData, uint16_t *pTemp)
+DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double*pData, int16_t *pTemp)
 {
     DRV_StatusTypeDef readStatus = ERROR_NONE;
     /* Check parameters */

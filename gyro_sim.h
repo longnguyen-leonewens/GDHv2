@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <math.h>
 #include <pthread.h>
+#include <unistd.h>
 /******************************************************************************
  * EXPORTED TYPEDEF
  ******************************************************************************/
@@ -113,7 +114,7 @@ StatusTypeDef GyroSim_StopSimulation(void);
  * @note   For READ_ALL: the sequence of parameters are
  *         Axis X -> Axis Y -> Axis Z -> Acceleration X -> Acceleration Y -> Acceleration Z -> Temperature
  */
-StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, uint16_t *pTemp);
+StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp);
 
 #endif /* GYRO_SIM_H_ */
 
