@@ -21,11 +21,7 @@
 /******************************************************************************
 * INCLUDES
 ******************************************************************************/
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
 #include "gyro.h"
 /******************************************************************************
 * EXPORTED CONSTANTS
@@ -64,8 +60,8 @@ typedef struct __Gyro_PackageStruct
    uint8_t            PackageVer;          /*<! Package version */
    uint8_t            Timestamp[6];        /*<! Gyroscope sensro read time*/
    Gyro_ParamsTypeDef Data ;               /*<! Sensor data */
-   uint8_t            Used;                /*<! Using mark */
    uint8_t            Reserved[2];          /*<! Reserved for future use */
+   uint8_t            Used;                /*<! Using mark */
    uint8_t            CRC[2];              /*<! CRC Check bytes */
 } __attribute__((packed)) Gyro_PackageTypeDef;
 
@@ -74,9 +70,10 @@ typedef struct __Gyro_PackageStruct
  */
 typedef struct __Gyro_StringStruct
 {
-   char PackageVer[2];          /*<! Packet version xx */
-   char Timestamp[6];           /*<! Timestamp xx:xx:xx */
-   char GyroData[6][6];         /*<! Gyroscope data xxx,xx */
+   char PackageVer[2U];          /*<! Packet version xx */
+   char Time[8U];                /*<! Timestamp xx:xx:xx */
+   char Date[10U];               /*<! Date xx/xx/xxxx */
+   char GyroData[7][6];          /*<! Gyroscope data xxx,xx */
 }Gyro_StringsTypeDef;
 
 /**
@@ -109,6 +106,27 @@ typedef union __Gyro_DataFrameUnion
 ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
                               Gyro_ParamsTypeDef *pSensorData);
 
+/**
+ * @brief Convert package frame to array of uint8_t
+ * @param pFrame Pointer to package frame
+ * @param array Array
+ * @return Error status
+ */
+ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
+                                       uint8_t *array);
+
+/**
+ * @brief Convert array of uint8_t to package frame
+ * @param array Array
+ * @param pFrame Pointer to package frame
+ * @return Error status
+ */
+ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
+                                       Gyro_DataFrameTypeDef* pFrame)
+{
+    memcpy(pFrame->ByteFrame, array, PACKAGE_SIZE);
+    return SUCCESS;
+}
 
 /**
 * @brief  Convert package to struct of strings used for printing, interface

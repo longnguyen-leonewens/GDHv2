@@ -22,9 +22,12 @@
 /******************************************************************************
 * INCLUDES
 ******************************************************************************/
-
 #include "gyropacket.h"
-
+#include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 /******************************************************************************
 * PRIVATE TYPEDEF
 ******************************************************************************/
@@ -137,10 +140,47 @@ ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
 ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
                                  Gyro_StringsTypeDef* pString)
 {
-    /* Work in progress */
+    char    tempStr[16];
+    uint8_t i;
+    /* Convert */
+    /* Version */
+    snprintf(pString->PackageVer, 2U, "%d", pFrame->Fields.PackageVer);
+    /* Time in format hour:minute:second */
+    snprintf(pString->Time, 8U, "%02d:%02d:%02d", pFrame->Fields.Timestamp[2U], \
+                                                  pFrame->Fields.Timestamp[1U],\
+                                                  pFrame->Fields.Timestamp[0U]);
+    /* Date in format dd/mm/yyyy */
+    snprintf(pString->Date, 10U, "%02d/%02d/%04d", pFrame->Fields.Timestamp[3U], \
+                                                   pFrame->Fields.Timestamp[4U],\
+                                                   pFrame->Fields.Timestamp[5U] + 1900U);
+    /* Gyroscope data */
+    for (i = 0; i < 6U; i++)
+    {
+        snprintf(pString->GyroData[i], 6U, "%.3f", ((double*)&pFrame->Fields.Data.axisX)[i]);
+    }
+    /* Temp */
+    snprintf(pString->GyroData[6], 6U, "%d", pFrame->Fields.Data.temp);
     return SUCCESS;
 }
 
+/**
+ * @brief Get local time
+ * @param pBuffer Buffer tp store converted time
+ * @note  None
+ */
+void GyroPackage_GetTime(uint8_t *pBuffer)
+{
+    time_t    rawTime;
+    struct tm *timeRead;
+    uint8_t   i;
+    /* Get time */
+    time(&rawTime);
+    timeRead = localtime(&rawTime);
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        pBuffer[i] = (uint8_t)(((int*)timeRead)[i]);
+    }
+}
 /******************************************************************************
  * EOF
  ******************************************************************************/
