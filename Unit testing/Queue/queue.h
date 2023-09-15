@@ -1,26 +1,37 @@
 /**
- * @file queue.h
+  ******************************************************************************
+  * @file queue.h
  * @author HungDH14
  * @brief J0B 4- QUEUE
  * @version 0.1
  * @date 2023-09-11
- *
- * @copyright Copyright (c) 2023
- *
- */
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 longnguyen-leonewens (Github)
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
-#include <stdint.h>
-
- /*******************************************************************************
- * Definitions
+/******************************************************************************
+ * INCLUDES
  ******************************************************************************/
-
- /**
+#include <stdint.h>
+#include "def.h"
+/******************************************************************************
+ * EXPORTED TYPEDEF
+ ******************************************************************************/
+/**
   * @brief queue control struct
   */
-typedef struct Queue_Instance 
+typedef struct Queue_Instance
 {
     uint8_t  *pQueueElement;
     uint16_t elementSize;
@@ -43,9 +54,9 @@ typedef enum Queue_Status {
 
 typedef void(*Error_CallbackFunction)(Queue_StatusTypeDef);
 
-/*******************************************************************************
-* API
-******************************************************************************/
+/******************************************************************************
+ * EXPORTED FUNCTIONS PROTOTYPES
+ ******************************************************************************/
 
 /**
  * @brief Function is used to initialize for Queue struct

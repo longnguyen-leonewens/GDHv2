@@ -1,33 +1,52 @@
 /**
- * @file queue.c
+  ******************************************************************************
+  *@file queue.c
  * @author HungDH14
  * @brief J0B 4- QUEUE
  * @version 0.1
  * @date 2023-09-11
- *
- * @copyright Copyright (c) 2023
- *
- */
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 longnguyen-leonewens (Github)
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+
+/******************************************************************************
+ * INCLUDES
+ ******************************************************************************/
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include "queue.h"
-#include "assert.h"
-/*******************************************************************************
-* Definitions
-******************************************************************************/
+/******************************************************************************
+ * PRIVATE TYPEDEF
+ ******************************************************************************/
 
-#define IS_VALID_POINTER(ptr)   (NULL != ptr)
+/******************************************************************************
+ * PRIVATE CONSTANTS
+ ******************************************************************************/
 
-/*******************************************************************************
-* Variables
-******************************************************************************/
+/******************************************************************************
+ * PRIVATE MACROS
+ ******************************************************************************/
 
+/******************************************************************************
+ * PRIVATE VARIABLES
+ ******************************************************************************/
 Error_CallbackFunction pError;
+/******************************************************************************
+ * PRIVATE FUNCTIONS PROTOTYPES
+ ******************************************************************************/
 
-/*******************************************************************************
-* Code
-******************************************************************************/
+/******************************************************************************
+ * PRIVATE FUNCTIONS
+ ******************************************************************************/
 
 /**
  * @brief Function is used to initialize for Queue struct
@@ -42,7 +61,7 @@ Queue_StatusTypeDef Queue_Init(Queue_TypeDef* pQueueInstance,
                           uint8_t sizeQueue,
                           uint16_t sizeElement)
 {
-    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(bufferQueue));
+    assert_param(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(bufferQueue));
 
     pQueueInstance->pQueueElement = bufferQueue;
     pQueueInstance->elementSize   = sizeElement;
@@ -62,7 +81,7 @@ Queue_StatusTypeDef Queue_Init(Queue_TypeDef* pQueueInstance,
 Queue_StatusTypeDef Queue_IsFull(Queue_TypeDef* pQueueInstance)
 {
     Queue_StatusTypeDef retVal = QUEUE_OK;
-    assert(IS_VALID_POINTER(pQueueInstance));
+    assert_param(IS_VALID_POINTER(pQueueInstance));
 
     if (pQueueInstance->levelQueue == pQueueInstance->queueSize)
     {
@@ -80,7 +99,7 @@ Queue_StatusTypeDef Queue_IsFull(Queue_TypeDef* pQueueInstance)
 Queue_StatusTypeDef Queue_IsEmpty(Queue_TypeDef* pQueueInstance)
 {
     Queue_StatusTypeDef retVal = QUEUE_OK;
-    assert(IS_VALID_POINTER(pQueueInstance));
+    assert_param(IS_VALID_POINTER(pQueueInstance));
 
     if (pQueueInstance->levelQueue == 0)
     {
@@ -102,7 +121,7 @@ Queue_StatusTypeDef Queue_Push(Queue_TypeDef* pQueueInstance,
                           uint16_t lengthDataPush)
 {
     Queue_StatusTypeDef retVal = QUEUE_OK;
-    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPushData));
+    assert_param(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPushData));
 
     if (pQueueInstance->levelQueue != pQueueInstance->queueSize)
     {
@@ -131,7 +150,7 @@ Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
                          uint16_t lengthDataPop)
 {
     Queue_StatusTypeDef retVal = QUEUE_OK;
-    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPopData));
+    assert_param(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pPopData));
 
     if (pQueueInstance->levelQueue != 0)
     {
@@ -158,7 +177,7 @@ Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
                                        uint8_t* pAvailableLength)
 {
     Queue_StatusTypeDef retVal = QUEUE_OK;
-    assert(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pAvailableLength));
+    assert_param(IS_VALID_POINTER(pQueueInstance) && IS_VALID_POINTER(pAvailableLength));
 
     *pAvailableLength = pQueueInstance->queueSize - pQueueInstance->levelQueue;
 
@@ -173,7 +192,7 @@ Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
  */
 Queue_StatusTypeDef Queue_Reset(Queue_TypeDef* pQueueInstance)
 {
-    assert(IS_VALID_POINTER(pQueueInstance));
+    assert_param(IS_VALID_POINTER(pQueueInstance));
 
     pQueueInstance->head = 0;
     pQueueInstance ->tail = 0;
@@ -194,7 +213,6 @@ Queue_StatusTypeDef Queue_UpdateAddressCallbackFunction(Error_CallbackFunction a
     return QUEUE_OK;
 }
 
-/************************************************************************************
+/******************************************************************************
  * EOF
- * *********************************************************************************/
-
+ ******************************************************************************/
