@@ -18,7 +18,7 @@ static FlashSim_ErrorCallback s_FlashErrorCallback;
 
 
 
-static FlashSim_Handle_Struct_t* pFlashSimHandle;
+static FlashSim_HandleTypeDef* pFlashSimHandle;
 /******************************************************************************
 * * API
 ******************************************************************************/
@@ -28,9 +28,9 @@ static FlashSim_Handle_Struct_t* pFlashSimHandle;
   * @param  void
   * @retval void
   */
-FlashSim_State_t FlashSim_Init(FlashSim_Handle_Struct_t* const FlashSimHandle)
+FlashSim_StateTypeDef FlashSim_Init(FlashSim_HandleTypeDef* const FlashSimHandle)
 {
-    FlashSim_State_t retVal = FLASH_SIM_STATE_OK;
+    FlashSim_StateTypeDef retVal = FLASH_SIM_STATE_OK;
 
 
 
@@ -72,9 +72,9 @@ FlashSim_State_t FlashSim_Init(FlashSim_Handle_Struct_t* const FlashSimHandle)
   * @param  size          -  size of buffer
   * @retval FLASH_SIM_ERROR_t
   */
-FlashSim_State_t FlashSim_Read(uint32_t startAddress, uint8_t* const buff, uint32_t size)
+FlashSim_StateTypeDef FlashSim_Read(uint32_t startAddress, uint8_t* const buff, uint32_t size)
 {
-    FlashSim_State_t retVal = FLASH_SIM_STATE_OK;
+    FlashSim_StateTypeDef retVal = FLASH_SIM_STATE_OK;
     uint8_t* p_data = (uint8_t*)(startAddress + &s_FlashMem[0][0]);
 
 
@@ -119,9 +119,9 @@ FlashSim_State_t FlashSim_Read(uint32_t startAddress, uint8_t* const buff, uint3
   * @param  size          -  size of buffer
   * @retval FLASH_SIM_ERROR_t
   */
-FlashSim_State_t FlashSim_Write(uint32_t startAddress, uint8_t* const buff, uint32_t size)
+FlashSim_StateTypeDef FlashSim_Write(uint32_t startAddress, uint8_t* const buff, uint32_t size)
 {
-    FlashSim_State_t retVal = FLASH_SIM_STATE_OK;
+    FlashSim_StateTypeDef retVal = FLASH_SIM_STATE_OK;
     uint8_t* p_data = (uint8_t*)(startAddress + &s_FlashMem[0][0]);
     uint8_t* buff_temp = buff;
 
@@ -171,9 +171,9 @@ FlashSim_State_t FlashSim_Write(uint32_t startAddress, uint8_t* const buff, uint
   * @param  numOfSector - Number of sector
   * @retval FLASH_SIM_ERROR_ts
   */
-FlashSim_State_t FlashSim_EraseMultiSector(uint32_t sectorIndex, uint32_t numOfSector)
+FlashSim_StateTypeDef FlashSim_EraseMultiSector(uint32_t sectorIndex, uint32_t numOfSector)
 {
-    FlashSim_State_t retVal = pFlashSimHandle->state;
+    FlashSim_StateTypeDef retVal = pFlashSimHandle->state;
 
 
 
@@ -200,17 +200,26 @@ FlashSim_State_t FlashSim_EraseMultiSector(uint32_t sectorIndex, uint32_t numOfS
 
 
 
-void printfFlashMem(void)
+void printfFlashMem(uint16_t startSector, uint16_t endSector)
 {
     uint8_t indx, indy;
     uint8_t* data = &s_FlashMem[0][0];
-    for (indx = 0; indx < 20; indx++)
+    uint32_t offset = 0;
+    printf("Offset      01\t02\t03\t04\t05\t06\t08\t09\t0A\t0B\t0C\t0D\t0E\t0F\n");
+    for (uint16_t i = startSector; i < endSector; i++)
     {
-        for (indy = 0; indy < 10; indy++)
+        printf("Sector %d\n",i);
+        for (indx = 0; indx < 32; indx++)
         {
-            printf("%d\t", *(data + indx * 10 + indy));
+            printf("%08d",offset);
+            offset += 16U;
+            for (indy = 0; indy < 16; indy++)
+            {
+                printf("     %02X\t", *(data + indx * 16 + indy));
+            }
+            printf("\n");
         }
-        printf("\n");
+        printf("\n\n");
     }
 }
 

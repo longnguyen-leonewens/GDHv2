@@ -63,7 +63,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
 {
     uint16_t crc    = 0u;
     uint16_t length = PACKAGE_SIZE - 2u;
-    uint8_t *pU8Temp = (uint8_t*)pFrame->ByteFrame;
+    uint8_t *pU8Temp = &pFrame->ByteFrame[0];
     /* Check parameters */
     //assert(IS_VALID_POINTER(pFrame));
     //assert(IS_VALID_POINTER(pSensorData));
@@ -85,7 +85,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
     /* CRC Check */
     while (length)
    {
-       crc = crc ^ ((*(pU8Temp + PACKAGE_SIZE - 2U -length)) << 8u);
+       crc = crc ^ (*pU8Temp++ << 8u);
        for (uint8_t i = 0u; i < 8u; i++)
        {
            if (crc & 0x8000u)
@@ -99,8 +99,8 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
        }
        length--;
    }
-    pFrame->Fields.CRC[0] = (uint8_t)((crc&0xFF00)>>8);
-    pFrame->Fields.CRC[1] = (uint8_t)(crc&0xFF);
+    pFrame->Fields.CRC[0] = (uint8_t)(crc&0xFF);
+    pFrame->Fields.CRC[1] = (uint8_t)((crc&0xFF00)>>8);
 
     return SUCCESS;
 }

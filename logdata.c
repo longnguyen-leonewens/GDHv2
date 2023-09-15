@@ -53,16 +53,16 @@ status_t logData_InitLogRegion(void)
 status_t logData_CheckValidCRC(uint8_t* pu8package)
 {
     /* assert check input param*/
-    assert(NULL == pu8package);
+    assert(NULL != pu8package);
 
     status_t retVal = RET_FAIL;
     uint16_t crc_cal = 0u;   /* crc caculate */
-    uint16_t crc_pack = (uint16_t)pu8package[dataRegion.length - 2]; /* crc in package */
+    uint16_t crc_pack = *((uint16_t*)&pu8package[dataRegion.length - 2]); /* crc in package */
     uint16_t length = (dataRegion.length - 2);
     while (length)
     {
         length--;
-        crc_cal = crc_cal ^ ((uint8_t)*pu8package++ << 8u);
+        crc_cal = crc_cal ^ (*pu8package++ << 8u);
         for (uint8_t i = 0u; i < 8u; i++)
         {
             if (crc_cal & 0x8000u)

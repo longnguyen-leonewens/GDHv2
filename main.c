@@ -27,7 +27,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "logdata.h"
 #include "gyropacket.h"
+#include "flash_sim.h"
 #include "gyro.h"
 #include "queue.h"
 /******************************************************************************
@@ -48,7 +50,8 @@
 //#define TEST_GYROSCOPE_READ_DATA
 //#define TEST_GYROSCOPE_PACKAGE
 //#define TEST_GYROSCOPE_PACKAGE_HEX
-//#define TEST_QUEUE_PUSH_AND_POP
+#define TEST_QUEUE_PUSH_AND_POP
+//#define TEST_CHECK_CRC
 //#define TEST_FLASH_WRITE
 #endif
 
@@ -79,6 +82,8 @@ Gyro_DataFrameTypeDef gyroPackage;
 pthread_mutex_t mutexFIFO;
 /* Condition variable for signaling data logging thread */
 pthread_cond_t condNotifyThread;
+/* Flash control struct */
+FlashSim_HandleTypeDef flashHandle;
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
@@ -97,7 +102,8 @@ int main(void)
 {
     /* Initialize peripherals and modules */
     Gyro_Init();
-    //Flash_Init();
+    FlashSim_Init(&flashHandle);
+    //printfFlashMem(0, NUMBER_OF_SECTOR);
     Queue_Init(&gyroQueue, (uint8_t*)fifoBuffer, FIFO_SIZE, PACKAGE_SIZE);
     /* Init mutex for pushing and popping FIFO */
     pthread_mutex_init(&mutexFIFO, NULL);
@@ -214,10 +220,12 @@ void* Application_DataHandling(void *arg)
 void* Application_DataLogging(void *arg)
 {
     uint8_t dataBuffer[64U];
-    Gyro_DataFrameTypeDef *testFrame;
 #ifdef TEST_QUEUE_PUSH_AND_POP
+    Gyro_DataFrameTypeDef *testFrame;
     uint32_t popCount = 0;
 #endif
+    /* Initialze logging region */
+    logData_InitLogRegion();
     while(true)
     {
         if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
@@ -225,8 +233,9 @@ void* Application_DataLogging(void *arg)
             /* Lock mutex */
             pthread_mutex_lock(&mutexFIFO);
             Queue_Pop(&gyroQueue, dataBuffer, PACKAGE_SIZE);
-            testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;
+
 #ifdef TEST_QUEUE_PUSH_AND_POP
+            testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;
             printf("|   %02X%02X   |    %02X   | %02d:%02d:%02d  %02d/%02d/%04d | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|   %02X%02X   |  %02X  | %02X%02X | %-7s | %5d |\n",\
             testFrame->Fields.Preamble[0], testFrame->Fields.Preamble[1],\
             testFrame->Fields.PackageVer,\
@@ -242,6 +251,22 @@ void* Application_DataLogging(void *arg)
 #endif
             /* Unlock mutex */
             pthread_mutex_unlock(&mutexFIFO);
+#ifdef TEST_CHECK_CRC
+            /* Check to write to flash */
+            if (logData_CheckValidCRC(dataBuffer) == RET_FAIL)
+            {
+                printf("Corrupted package\n");
+            }
+            else
+            {
+                printf("Valid package\n");
+            }
+#endif
+            /* Find package position to write to FLASH */
+            //logData_FindLastSector();
+            //logData_FindLastPackage_Binary();
+            /* Write to flash */
+            //FlashSim_Write();
         }
     }
     return NULL;

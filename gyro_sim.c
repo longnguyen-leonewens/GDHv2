@@ -97,7 +97,6 @@ static void *Gyro_Simulation(void* arg);
 static void *Gyro_Simulation(void* arg)
 {
     uint32_t simFrequency = DEFAULT_FREQUENCY;
-    double time  = 0;
     double temp  = 0;
     double alpha = PI/3;
     /* Check if frequency is passed as an argument */
@@ -213,7 +212,7 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp
     }
     /* Unlock mutex */
     pthread_mutex_unlock(&mutexGyroData);
-    return ERROR_NONE;
+    return readStatus;
 }
 
 /******************************************************************************
