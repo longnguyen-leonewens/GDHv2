@@ -1,3 +1,5 @@
 settings.json
 c_cpp_properties.json
 Makefile
+*.o
+my_app.exe
