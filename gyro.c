@@ -22,6 +22,7 @@
  ******************************************************************************/
 #include "gyro_sim.h"
 #include "gyro.h"
+#include <assert.h>
 /******************************************************************************
  * PRIVATE TYPEDEF
  ******************************************************************************/
@@ -66,7 +67,7 @@ DRV_StatusTypeDef Gyro_Init(void)
     /* Initialize GPIO Pins, Clocks, Configuration */
 
     /* Start simulation */
-    if(GyroSim_StartSimulation(DEFAULT_FREQUENCY))
+    if(GyroSim_StartSimulation(MIN_FREQUENCY))
     {
         initStatus = ERROR;
     }

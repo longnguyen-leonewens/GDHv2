@@ -56,9 +56,9 @@ void GyroPackage_GetTime(uint8_t *pBuffer);
 * @brief   Build a package from data that was read from sensor
  * @param  pPackage pointer to package struct
  * @param  pData pointer to gyroscope data struct
- * @return ErrorStatus SUCCESS or ERROR
+ * @return StatusTypeDef ERROR_NONE or ERROR
  */
-ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
+StatusTypeDef GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
                               Gyro_ParamsTypeDef *pSensorData)
 {
     uint16_t crc    = 0u;
@@ -102,7 +102,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
     pFrame->Fields.CRC[0] = (uint8_t)(crc&0xFF);
     pFrame->Fields.CRC[1] = (uint8_t)((crc&0xFF00)>>8);
 
-    return SUCCESS;
+    return ERROR_NONE;
 }
 
 /**
@@ -111,11 +111,11 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
  * @param array Array
  * @return Error status
  */
-ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
+StatusTypeDef GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
                                        uint8_t *array)
 {
     memcpy(array, pFrame->ByteFrame, PACKAGE_SIZE);
-    return SUCCESS;
+    return ERROR_NONE;
 }
 
 /**
@@ -124,20 +124,20 @@ ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
  * @param pFrame Pointer to package frame
  * @return Error status
  */
-ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
+StatusTypeDef GyroPackage_ArrayToPackage(uint8_t *array,\
                                        Gyro_DataFrameTypeDef* pFrame)
 {
     memcpy(pFrame->ByteFrame, array, PACKAGE_SIZE);
-    return SUCCESS;
+    return ERROR_NONE;
 }
 
 /**
 * @brief  Convert package to struct of strings used for printing, interface
  * @param pFrame pointer to package struct
  * @param pString pointer to string struct
-* @return ErrorStatus SUCCESS or ERROR
+* @return StatusTypeDef ERROR_NONE or ERROR
 */
-ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
+StatusTypeDef GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
                                  Gyro_StringsTypeDef* pString)
 {
     uint8_t i;
@@ -159,7 +159,7 @@ ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
     }
     /* Temp */
     snprintf(pString->GyroData[6], 6U, "%d", pFrame->Fields.Data.temp);
-    return SUCCESS;
+    return ERROR_NONE;
 }
 
 /**

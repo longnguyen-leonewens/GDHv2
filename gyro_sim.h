@@ -22,28 +22,11 @@
 /******************************************************************************
  * INCLUDES
  ******************************************************************************/
-#include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <math.h>
-#include <sys/time.h>
-#include <pthread.h>
-#include <unistd.h>
+#include "def.h"
 /******************************************************************************
  * EXPORTED TYPEDEF
  ******************************************************************************/
-/**
-  * @brief  Status structures definition
-  */
-typedef enum
-{
-  ERROR_NONE = 0x00U,
-  ERROR      = 0x01U,
-  BUSY       = 0x02U,
-  TIMEOUT    = 0x03U
-} StatusTypeDef;
 
 /** @defgroup Parameter read options from gyroscope simulation
  * @{
@@ -63,7 +46,7 @@ typedef enum
 /** @defgroup Gyroscope sensor constants
  * @{
  */
-#define DEFAULT_FREQUENCY                      (60U)
+#define MIN_FREQUENCY                          (60U)
 #define GRAVITY_ACCE                           (9.8)
 #define MAX_GYRO                               (10U)
 #define AVG_TEMP                               (77.5)

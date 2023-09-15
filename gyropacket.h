@@ -23,6 +23,7 @@
 ******************************************************************************/
 #include <stdint.h>
 #include "gyro.h"
+#include "def.h"
 /******************************************************************************
 * EXPORTED CONSTANTS
 ******************************************************************************/
@@ -41,15 +42,6 @@
 /******************************************************************************
 * EXPORTED TYPEDEF
 ******************************************************************************/
-
-/**
- * @brief  Error status
- */
-typedef enum
-{
-    SUCCESS = 0U,
-    ERROR = !SUCCESS
-}ErrorStatus;
 
 /**
  * @brief  Gyroscope packet struct
@@ -101,9 +93,9 @@ typedef union __Gyro_DataFrameUnion
 * @brief   Build a package from data that was read from sensor
  * @param  pFrame pointer to package struct
  * @param  pSensorData pointer to gyroscope data struct
- * @return ErrorStatus SUCCESS or ERROR
+ * @return StatusTypeDef SUCCESS or ERROR
  */
-ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
+StatusTypeDef GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
                               Gyro_ParamsTypeDef *pSensorData);
 
 /**
@@ -112,7 +104,7 @@ ErrorStatus GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
  * @param array Array
  * @return Error status
  */
-ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
+StatusTypeDef GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
                                        uint8_t *array);
 
 /**
@@ -121,15 +113,15 @@ ErrorStatus GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
  * @param pFrame Pointer to package frame
  * @return Error status
  */
-ErrorStatus GyroPackage_ArrayToPackage(uint8_t *array,\
+StatusTypeDef GyroPackage_ArrayToPackage(uint8_t *array,\
                                        Gyro_DataFrameTypeDef* pFrame);
 /**
 * @brief  Convert package to struct of strings used for printing, interface
  * @param pFrame pointer to package struct
  * @param pString pointer to string struct
-* @return ErrorStatus SUCCESS or ERROR
+* @return StatusTypeDef SUCCESS or ERROR
 */
-ErrorStatus GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
+StatusTypeDef GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
                                  Gyro_StringsTypeDef* pString);
 
 #endif /* GYROPACKET_H_ */

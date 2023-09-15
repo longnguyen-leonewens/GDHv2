@@ -50,15 +50,25 @@
 //#define TEST_GYROSCOPE_READ_DATA
 //#define TEST_GYROSCOPE_PACKAGE
 //#define TEST_GYROSCOPE_PACKAGE_HEX
-#define TEST_QUEUE_PUSH_AND_POP
+//#define TEST_QUEUE_PUSH_AND_POP
 //#define TEST_CHECK_CRC
-//#define TEST_FLASH_WRITE
+#define TEST_FLASH_WRITE
 #endif
 
 /** @defgroup FIFO Configurations
  * @{
  */
 #define FIFO_SIZE                        (16U)
+/**
+ * @}
+ */
+
+/** @defgroup Package region configurations
+ * @{
+ */
+#define LOG_REGION_BEGIN_ADDRESS            (0x00000000U)
+#define LOG_REGION_END_ADDRESS              (0x00003FFFU)
+#define LOG_REGION_SECTOR_COUNT             ((LOG_REGION_END_ADDRESS + 1U - LOG_REGION_BEGIN_ADDRESS)/LOG_DATA_SECTOR_SIZE)
 /**
  * @}
  */
@@ -84,6 +94,8 @@ pthread_mutex_t mutexFIFO;
 pthread_cond_t condNotifyThread;
 /* Flash control struct */
 FlashSim_HandleTypeDef flashHandle;
+/* Logging data struct */
+DataRegion_TypeDef dataRegion;
 /******************************************************************************
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
@@ -219,13 +231,29 @@ void* Application_DataHandling(void *arg)
  */
 void* Application_DataLogging(void *arg)
 {
-    uint8_t dataBuffer[64U];
+    uint8_t  dataBuffer[64U];
+    uint32_t writeAddress = 0;
 #ifdef TEST_QUEUE_PUSH_AND_POP
-    Gyro_DataFrameTypeDef *testFrame;
+    Gyro_DataFrameTypeDef *testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;;
     uint32_t popCount = 0;
 #endif
+
+#ifdef TEST_FLASH_WRITE
+    uint32_t sectorCount = 0;
+    uint32_t packageCount = 0;
+#endif
     /* Initialze logging region */
-    logData_InitLogRegion();
+    dataRegion.beginAddress = LOG_REGION_BEGIN_ADDRESS;
+    dataRegion.endAddress = LOG_REGION_END_ADDRESS;
+    dataRegion.lengthPackage = PACKAGE_SIZE;
+    dataRegion.numberPackage = (LOG_REGION_END_ADDRESS + 1U - LOG_REGION_BEGIN_ADDRESS)/PACKAGE_SIZE;
+    LogData_EraserLogRegion(&dataRegion);
+    /* Find last package */
+    if (LogData_FindLastPackage_Binary(&dataRegion, (uint64_t*)&writeAddress) == ERROR_NONE)
+    {
+        printf("Flash not empty\n");
+        LogData_FindNextPackage(&dataRegion, (uint64_t*)&writeAddress,(uint64_t) writeAddress);
+    }
     while(true)
     {
         if (Queue_IsEmpty(&gyroQueue) == QUEUE_OK)
@@ -235,7 +263,6 @@ void* Application_DataLogging(void *arg)
             Queue_Pop(&gyroQueue, dataBuffer, PACKAGE_SIZE);
 
 #ifdef TEST_QUEUE_PUSH_AND_POP
-            testFrame = (Gyro_DataFrameTypeDef*)dataBuffer;
             printf("|   %02X%02X   |    %02X   | %02d:%02d:%02d  %02d/%02d/%04d | %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-9.2f| %-5d|   %02X%02X   |  %02X  | %02X%02X | %-7s | %5d |\n",\
             testFrame->Fields.Preamble[0], testFrame->Fields.Preamble[1],\
             testFrame->Fields.PackageVer,\
@@ -263,15 +290,36 @@ void* Application_DataLogging(void *arg)
             }
 #endif
             /* Find package position to write to FLASH */
-            //logData_FindLastSector();
-            //logData_FindLastPackage_Binary();
             /* Write to flash */
-            //FlashSim_Write();
+            FlashSim_Write(writeAddress, dataBuffer, PACKAGE_SIZE);
+#ifdef TEST_FLASH_WRITE
+            packageCount++;
+            printf("Package %d, Write at %5d, Package position %.1f\n", packageCount, writeAddress, writeAddress/64.0);
+            for (uint8_t i = 0; i < 4; i++)
+            {
+                for (uint8_t j = 0; j < 16; j++)
+                {
+                    printf("%02X   ", dataBuffer[16*i + j]);
+                }
+                printf("\n");
+            }
+            if ((packageCount % 16) == 0)
+            {
+                printfFlashMem(sectorCount, sectorCount + 2);
+                sectorCount = (sectorCount + 2) % (LOG_REGION_SECTOR_COUNT);
+            }
+#endif
+            /* Find next package position to write to FLASH */
+            LogData_FindNextPackage(&dataRegion, (uint64_t*)&writeAddress,(uint64_t) writeAddress);
         }
     }
     return NULL;
 }
 
+  void assert_failed(uint8_t* file, uint32_t line)
+  {
+    printf("You fools, wrong parameters passed at file %s, line %d", file,line);
+  }
 /******************************************************************************
  * EOF
  ******************************************************************************/

@@ -20,10 +20,21 @@
 /******************************************************************************
  * INCLUDES
  ******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <math.h>
+#include <sys/time.h>
+#include <_timeval.h>
+#include <pthread.h>
+#include <unistd.h>
 #include "gyro_sim.h"
 /******************************************************************************
  * PRIVATE TYPEDEF
  ******************************************************************************/
+
+typedef struct timeval Gyro_Time_Val;
 
 /**
  * @brief Struct for parameter of gyro
@@ -85,6 +96,7 @@ static uint32_t              generateFreq;   /* Data generating frequency */
  * PRIVATE FUNCTIONS PROTOTYPES
  ******************************************************************************/
 static void *Gyro_Simulation(void* arg);
+static void GyroSim_Delay(uint64_t microsec);
 /******************************************************************************
  * PRIVATE FUNCTIONS
  ******************************************************************************/
@@ -96,9 +108,9 @@ static void *Gyro_Simulation(void* arg);
  */
 static void *Gyro_Simulation(void* arg)
 {
-    uint32_t simFrequency = DEFAULT_FREQUENCY;
+    uint32_t simFrequency = MIN_FREQUENCY;
     double temp  = 0;
-    double alpha = PI/3;
+    double alpha = 0;
     /* Check if frequency is passed as an argument */
     if (arg != NULL)
     {
@@ -120,12 +132,9 @@ static void *Gyro_Simulation(void* arg)
         gyroData.acceY = sqrt(temp) * sin(alpha);
         gyroData.acceZ = sqrt(temp) * cos(alpha);
         gyroData.temp  = OFFSET_TEMP + AVG_TEMP * sin(alpha);
-        //printf("\n| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10d|", gyroData.axisX,gyroData.axisY,gyroData.axisZ,gyroData.acceX,gyroData.acceY,gyroData.acceZ,gyroData.temp);
-        //printf("| %-10.2f| %-10.2f| %-10.2f| %-10.2f| %-10.2f| ", temp,sqrt(temp),alpha,sin(alpha),cos(alpha));
         /* Unlock mutex */
         pthread_mutex_unlock(&mutexGyroData);
-        /* Sleep */
-        alpha = alpha + PI/3000;
+        alpha = alpha + PI/3000000;
     }
     /* End the thread */
     pthread_exit(NULL);
@@ -150,7 +159,11 @@ StatusTypeDef GyroSim_StartSimulation(uint32_t simFrequency)
     gyroData.temp  = 0;
     /* Start gyro simulation thread */
     generateFreq = simFrequency;
-    if (pthread_create(&threadGyro, NULL, Gyro_Simulation, (void *)&generateFreq) != 0)
+    if (simFrequency == 0)
+    {
+        startState = ERROR;
+    }
+   else if (pthread_create(&threadGyro, NULL, Gyro_Simulation, (void *)&generateFreq) != 0)
     {
         startState = ERROR;
     }
@@ -212,7 +225,27 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp
     }
     /* Unlock mutex */
     pthread_mutex_unlock(&mutexGyroData);
-    return readStatus;
+    return ERROR_NONE;
+}
+
+/**
+ * @brief  Delay in microseconds
+ * @param  microsec Number of microseconds
+ * @retval None
+ */
+static void GyroSim_Delay(uint64_t microsec)
+{
+    uint64_t start;
+    uint64_t current;
+    Gyro_Time_Val GyroSim_Time;
+    gettimeofday(&GyroSim_Time, NULL);
+    start = GyroSim_Time.tv_usec;
+    current = start;
+    while(current < (start + microsec))
+    {
+        gettimeofday(&GyroSim_Time, NULL);
+        current = GyroSim_Time.tv_usec;
+    }
 }
 
 /******************************************************************************

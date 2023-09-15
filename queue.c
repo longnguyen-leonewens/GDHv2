@@ -136,7 +136,6 @@ Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
     if (pQueueInstance->levelQueue != 0)
     {
         memcpy(pPopData,&(pQueueInstance->pQueueElement[pQueueInstance->tail]),lengthDataPop);
-        memset(&(pQueueInstance->pQueueElement[pQueueInstance->tail]),0,pQueueInstance->elementSize);
         pQueueInstance->tail = (pQueueInstance->tail + pQueueInstance->elementSize) % (pQueueInstance->queueSize * pQueueInstance->elementSize);
         pQueueInstance->levelQueue--;
     }
