@@ -4,9 +4,9 @@
  * @brief J0B 4- QUEUE
  * @version 0.1
  * @date 2023-09-11
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -124,7 +124,7 @@ Queue_StatusTypeDef Queue_Push(Queue_TypeDef* pQueueInstance,
  * @param pQueueInstance pointer to a queue struct
  * @param pPopData       pointer to data popped from the queue
  * @param lengthDataPop  the length of data to be pop from the queue
- * @return Queue_StatusTypeDef - status of function 
+ * @return Queue_StatusTypeDef - status of function
  */
 Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
                          uint8_t* pPopData,
@@ -152,7 +152,7 @@ Queue_StatusTypeDef Queue_Pop(Queue_TypeDef* pQueueInstance,
  * @brief Function is used to get the available length of the queue
  * @param pQueueInstance pointer to a queue struct
  * @param pAvaibleLength pointer to the number of available length of the queue
- * @return Queue_StatusTypeDef - status of function 
+ * @return Queue_StatusTypeDef - status of function
  */
 Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
                                        uint8_t* pAvailableLength)
@@ -169,7 +169,7 @@ Queue_StatusTypeDef Queue_GetAvailableLength(Queue_TypeDef* pQueueInstance,
 /**
  * @brief Function is used to reset queue
  * @param pQueueInstance pointer to a queue struct
- * @return Queue_StatusTypeDef - status of function 
+ * @return Queue_StatusTypeDef - status of function
  */
 Queue_StatusTypeDef Queue_Reset(Queue_TypeDef* pQueueInstance)
 {

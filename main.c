@@ -2,9 +2,9 @@
   ******************************************************************************
   * @file    library.c
   * @author  Leo Newens (LongNDT5)
-  * @version
-  * @date
-  * @brief
+  * @version V1.0
+  * @date    15th September 2023
+  * @brief   Main implementation file for project
   ******************************************************************************
   * @attention
   *
@@ -44,7 +44,7 @@
 /**
   * @brief Uncomment the line below to include the testing code
   */
-#define TESTING
+//#define TESTING
 
 #ifdef TESTING
 //#define TEST_GYROSCOPE_READ_DATA
@@ -125,12 +125,12 @@ int main(void)
     pthread_t threadDataHandling;
     pthread_t threadDataLogging;
 #ifdef TESTING
-    printf( "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"\
+    printf( "-----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"\
             "| Preamble | Version |       Timestamp      "\
             "|  Gyro X  |  Gyro Y  |  Gyro Z  "\
             "|  Acce X  |  Acce Y  |  Acce Z  "\
             "| Temp | Reserved | Used | CRC  | Testing | Index |\n"\
-            "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            "-----------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 #endif
     pthread_create(&threadDataHandling, NULL, Application_DataHandling, NULL);
     pthread_create(&threadDataLogging , NULL, Application_DataLogging , NULL);
@@ -141,7 +141,6 @@ int main(void)
     Gyro_DeInit();
     /* Multithreading resources cleaning */
     pthread_mutex_destroy(&mutexFIFO);
-
     return 0;
 }
 
@@ -243,8 +242,8 @@ void* Application_DataLogging(void *arg)
     uint32_t packageCount = 0;
 #endif
     /* Initialze logging region */
-    dataRegion.beginAddress = LOG_REGION_BEGIN_ADDRESS;
-    dataRegion.endAddress = LOG_REGION_END_ADDRESS;
+    dataRegion.beginAddress  = LOG_REGION_BEGIN_ADDRESS;
+    dataRegion.endAddress    = LOG_REGION_END_ADDRESS;
     dataRegion.lengthPackage = PACKAGE_SIZE;
     dataRegion.numberPackage = (LOG_REGION_END_ADDRESS + 1U - LOG_REGION_BEGIN_ADDRESS)/PACKAGE_SIZE;
     LogData_EraserLogRegion(&dataRegion);
@@ -280,7 +279,7 @@ void* Application_DataLogging(void *arg)
             pthread_mutex_unlock(&mutexFIFO);
 #ifdef TEST_CHECK_CRC
             /* Check to write to flash */
-            if (logData_CheckValidCRC(dataBuffer) == RET_FAIL)
+            if (LogData_CheckValidCRC(dataBuffer) == ERROR)
             {
                 printf("Corrupted package\n");
             }
@@ -316,10 +315,10 @@ void* Application_DataLogging(void *arg)
     return NULL;
 }
 
-  void assert_failed(uint8_t* file, uint32_t line)
-  {
-    printf("You fools, wrong parameters passed at file %s, line %d", file,line);
-  }
+void assert_failed(uint8_t* file, uint32_t line)
+{
+    printf("Wrong parameters passed at file %s, line %d", file,line);
+}
 /******************************************************************************
  * EOF
  ******************************************************************************/

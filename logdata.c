@@ -102,10 +102,10 @@ StatusTypeDef LogData_FindLastSector(DataRegion_TypeDef* dataRegion, uint64_t* p
     
     if ((0 == *pu64AddrLastSector) && (retVal == ERROR_NONE))
     {
-        retVal = FlashSim_Read(*pu64AddrLastSector, &temp, 1);
+        retVal = (StatusTypeDef)FlashSim_Read(*pu64AddrLastSector, &temp, 1);
         if(0xFF == temp)
         {
-            retVal = FlashSim_Read(*pu64AddrLastSector+SECTOR_SIZE, &temp, 1);
+            retVal = (StatusTypeDef)FlashSim_Read(*pu64AddrLastSector+SECTOR_SIZE, &temp, 1);
             if (0xFF == temp)
             {
                 retVal = ERROR;
