@@ -65,19 +65,19 @@ typedef struct FlashSim_Handle_Struct
   * EXPORTED MACROS
   ******************************************************************************/
 
-  /******************************************************************************
-   * EXPORTED VARIABLES
-   ******************************************************************************/
+/******************************************************************************
+ * EXPORTED VARIABLES
+ ******************************************************************************/
 
-   /******************************************************************************
-    * EXPORTED FUNCTIONS PROTOTYPES
-    ******************************************************************************/
-    /**
-      * @brief  Initialized flash simulation.
-      *         This function init Flash simulation
-      * @param  FlashSimHandle pointer to init struct
-      * @retval void
-      */
+  /******************************************************************************
+  * EXPORTED FUNCTIONS PROTOTYPES
+  ******************************************************************************/
+/**
+  * @brief  Initialized flash simulation.
+  *         This function init Flash simulation
+  * @param  FlashSimHandle pointer to init struct
+  * @retval void
+  */
 FlashSim_StateTypeDef FlashSim_Init(FlashSim_HandleTypeDef* const FlashSimHandle);
 
 /**
@@ -111,9 +111,7 @@ FlashSim_StateTypeDef FlashSim_EraseMultiSector(uint64_t sectorIndex, uint32_t n
   * @param  sectorIndex - Index of sector
   * @retval FlashSim_StateTypeDef
   */
-FlashSim_StateTypeDef FlashSim_ShowSector(uint32_t sectorIndex);
-
-void printfFlashMem(uint16_t startSector, uint16_t endSector);
+void FlashSim_ShowSector(uint16_t startSector, uint16_t endSector);
 
 #endif /* FLASH_SIM_H_ */
 

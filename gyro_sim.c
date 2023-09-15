@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <assert.h>
 #include <math.h>
 #include <sys/time.h>
 #include <_timeval.h>
@@ -197,19 +196,19 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp
     uint8_t       i          = 0;
     StatusTypeDef readStatus = ERROR_NONE;
     /* Assertion */
-    assert(IS_SIM_READ_OPTION(readOption));
+    assert_param(IS_SIM_READ_OPTION(readOption));
     /* Lock mutex */
     pthread_mutex_lock(&mutexGyroData);
     if (readOption == SIMULATOR_READ_TEMP)
     {
         /* Check parameter */
-        assert(IS_VALID_POINTER(pTemp));
+        assert_param(IS_VALID_POINTER(pTemp));
         *pTemp = gyroData.temp;
     }
     else if (readOption == SIMULATOR_READ_ALL)
     {
         /* Check parameter */
-        assert(IS_VALID_POINTER(pData));
+        assert_param(IS_VALID_POINTER(pData));
         /* Read gyroscope stats */
         for (i = 0; i < 6; i++)
         {
@@ -220,7 +219,7 @@ StatusTypeDef GyroSim_ReadData(uint8_t readOption, double* pData, int16_t *pTemp
     else
     {
         /* Check parameter */
-        assert(IS_VALID_POINTER(pData));
+        assert_param(IS_VALID_POINTER(pData));
         *pData = pTempData[readOption];
     }
     /* Unlock mutex */

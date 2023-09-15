@@ -65,8 +65,8 @@ StatusTypeDef GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
     uint16_t length = PACKAGE_SIZE - 2u;
     uint8_t *pU8Temp = &pFrame->ByteFrame[0];
     /* Check parameters */
-    //assert(IS_VALID_POINTER(pFrame));
-    //assert(IS_VALID_POINTER(pSensorData));
+    assert_param(IS_VALID_POINTER(pFrame));
+    assert_param(IS_VALID_POINTER(pSensorData));
     /* Preamble */
     pFrame->Fields.Preamble[0] = 0xAB;
     pFrame->Fields.Preamble[1] = 0XCD;
@@ -114,6 +114,9 @@ StatusTypeDef GyroPackage_Build(Gyro_DataFrameTypeDef *pFrame,\
 StatusTypeDef GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
                                        uint8_t *array)
 {
+    /* Check parameters */
+    assert_param(IS_VALID_POINTER(pFrame));
+    assert_param(IS_VALID_POINTER(array));
     memcpy(array, pFrame->ByteFrame, PACKAGE_SIZE);
     return ERROR_NONE;
 }
@@ -127,6 +130,9 @@ StatusTypeDef GyroPackage_PackageToArray(Gyro_DataFrameTypeDef* pFrame,\
 StatusTypeDef GyroPackage_ArrayToPackage(uint8_t *array,\
                                        Gyro_DataFrameTypeDef* pFrame)
 {
+    /* Check parameters */
+    assert_param(IS_VALID_POINTER(pFrame));
+    assert_param(IS_VALID_POINTER(array));
     memcpy(pFrame->ByteFrame, array, PACKAGE_SIZE);
     return ERROR_NONE;
 }
@@ -141,6 +147,9 @@ StatusTypeDef GyroPackage_ToString(Gyro_DataFrameTypeDef *pFrame,\
                                  Gyro_StringsTypeDef* pString)
 {
     uint8_t i;
+    /* Check parameters */
+    assert_param(IS_VALID_POINTER(pFrame));
+    assert_param(IS_VALID_POINTER(pString));
     /* Convert */
     /* Version */
     snprintf(pString->PackageVer, 2U, "%d", pFrame->Fields.PackageVer);
@@ -172,6 +181,8 @@ void GyroPackage_GetTime(uint8_t *pBuffer)
     time_t    rawTime;
     struct tm *timeRead;
     uint8_t   i;
+    /* Check parameters */
+    assert_param(IS_VALID_POINTER(pBuffer));
     /* Get time */
     time(&rawTime);
     timeRead = localtime(&rawTime);

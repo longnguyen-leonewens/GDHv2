@@ -1,21 +1,57 @@
+/**
+  ******************************************************************************
+  * @file    flash_sim.c
+  * @author  VinhDD1
+  * @version
+  * @date
+  * @brief
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 longnguyen-leonewens (Github)
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+
 /******************************************************************************
-* Include
-******************************************************************************/
+ * INCLUDES
+ ******************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include "flash_sim.h"
+/******************************************************************************
+ * PRIVATE TYPEDEF
+ ******************************************************************************/
 
 /******************************************************************************
-* * Definitions
-******************************************************************************/
+ * PRIVATE CONSTANTS
+ ******************************************************************************/
+
+/******************************************************************************
+ * PRIVATE MACROS
+ ******************************************************************************/
+
+/******************************************************************************
+ * PRIVATE VARIABLES
+ ******************************************************************************/
 static uint8_t s_FlashMem[NUMBER_OF_SECTOR][SECTOR_SIZE];
 
 static FlashSim_ErrorCallback s_FlashErrorCallback;
 
 static FlashSim_HandleTypeDef* pFlashSimHandle;
 /******************************************************************************
-* * API
-******************************************************************************/
+ * PRIVATE FUNCTIONS PROTOTYPES
+ ******************************************************************************/
+
+/******************************************************************************
+ * PRIVATE FUNCTIONS
+ ******************************************************************************/
+
 /**
   * @brief  Initialized flash simulation.
   *         This function init Flash simulation
@@ -226,33 +262,7 @@ FlashSim_StateTypeDef FlashSim_EraseMultiSector(uint64_t sectorIndex, uint32_t n
   * @param  sectorIndex - Index of sector
   * @retval FlashSim_StateTypeDef
   */
-FlashSim_StateTypeDef FlashSim_ShowSector(uint32_t sectorIndex)
-{
-    uint8_t indx, indy;
-    uint8_t* data = &s_FlashMem[0][0] + sectorIndex * SECTOR_SIZE;
-    FlashSim_StateTypeDef retVal = FLASH_SIM_STATE_OK;
-
-    if (NUMBER_OF_SECTOR <= sectorIndex)
-    {
-        retVal = FLASH_SIM_STATE_ERROR_INVALID_PARAM;
-    }
-    else
-    {
-        for (indx = 0; indx < 64; indx++)
-        {
-            for (indy = 0; indy < 8; indy++)
-            {
-                /* print each byte */
-                printf("%X\t", *(data + indx * 8 + indy));
-            }
-            printf("\n");
-        }
-    }
-
-    return retVal;
-}
-
-void printfFlashMem(uint16_t startSector, uint16_t endSector)
+void FlashSim_ShowSector(uint16_t startSector, uint16_t endSector)
 {
     uint8_t indx, indy;
     uint8_t* data = &s_FlashMem[0][0];
@@ -275,6 +285,7 @@ void printfFlashMem(uint16_t startSector, uint16_t endSector)
     }
 }
 
+
 /******************************************************************************
-* * EOF
-******************************************************************************/
+ * EOF
+ ******************************************************************************/

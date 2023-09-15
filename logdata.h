@@ -1,20 +1,34 @@
 /**
-* @file LogData.h
+  ******************************************************************************
+  * @file LogData.h
 * @author TuanPA41
 * @brief Job 5: Log data to flash simulation
 * @version 0.1
 * @date 2023-09-11
-*
-* @copyright Copyright (c) 2023
-*
-*/
-#ifndef  _LogData_H_
-#define  _LogData_H_
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 longnguyen-leonewens (Github)
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+#ifndef  _LOGDATA_H_
+#define  _LOGDATA_H_
 
+
+/******************************************************************************
+ * INCLUDES
+ ******************************************************************************/
 #include "def.h"
-/*******************************************************************************
-* Definitions
-******************************************************************************/
+/******************************************************************************
+ * EXPORTED TYPEDEF
+ ******************************************************************************/
+
 /**
 * @brief Struct of Data Region Flash
 */
@@ -26,19 +40,26 @@ typedef struct DataRegion
     uint16_t lengthPackage;         /* length of package */
 }DataRegion_TypeDef;
 
+/******************************************************************************
+ * EXPORTED CONSTANTS
+ ******************************************************************************/
 
 #define LOG_DATA_NUMBER_OF_SECTOR          (64u)        /* 64 sector */
 #define LOG_DATA_SECTOR_SIZE               (512u)       /* 512 byte */
 #define LOG_DATA_SIZE_OF_PACKAGE           (64u)        /* 64 byte */
 #define LOG_DATA_NUM_OF_PACKAGE_PER_SECTOR (LOG_DATA_SECTOR_SIZE/ LOG_DATA_SIZE_OF_PACKAGE ) /* number package per sector */
 
-/*******************************************************************************
-* Variable
-******************************************************************************/
+/******************************************************************************
+ * EXPORTED MACROS
+ ******************************************************************************/
 
-/*******************************************************************************
-  * API
-  ******************************************************************************/
+/******************************************************************************
+ * EXPORTED VARIABLES
+ ******************************************************************************/
+
+/******************************************************************************
+ * EXPORTED FUNCTIONS PROTOTYPES
+ ******************************************************************************/
 
   /**
   * @brief Check valid CRC
@@ -112,7 +133,7 @@ StatusTypeDef LogData_SetPackageIsUsed(DataRegion_TypeDef* dataRegion, uint16_t 
 StatusTypeDef LogData_FindNextPackage(DataRegion_TypeDef* dataRegion, uint64_t* nextPackagePos, uint64_t currentPackagePos);
 
 #endif /* _LogData_H_ */
-/*******************************************************************************
-* EOF
-******************************************************************************/
 
+/******************************************************************************
+ * EOF
+ ******************************************************************************/

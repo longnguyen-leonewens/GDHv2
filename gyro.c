@@ -22,7 +22,6 @@
  ******************************************************************************/
 #include "gyro_sim.h"
 #include "gyro.h"
-#include <assert.h>
 /******************************************************************************
  * PRIVATE TYPEDEF
  ******************************************************************************/
@@ -42,8 +41,6 @@
                                       || ((OP) == GYRO_READ_ACCE_Z) \
                                       || ((OP) == GYRO_READ_TEMP)   \
                                       || ((OP) == GYRO_READ_ALL))
-
-#define IS_VALID_POINTER(PTR)                   ((PTR) != NULL)
 /******************************************************************************
  * PRIVATE VARIABLES
  ******************************************************************************/
@@ -102,7 +99,7 @@ DRV_StatusTypeDef Gyro_ReadData(uint8_t readOption, double*pData, int16_t *pTemp
 {
     DRV_StatusTypeDef readStatus = ERROR_NONE;
     /* Check parameters */
-    assert(IS_GYRO_READ_OPTION(readOption));
+    assert_param(IS_GYRO_READ_OPTION(readOption));
     if (GyroSim_ReadData(readOption, pData, pTemp) == ERROR)
     {
         readStatus = ERROR;

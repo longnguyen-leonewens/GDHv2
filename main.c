@@ -52,7 +52,7 @@
 //#define TEST_GYROSCOPE_PACKAGE_HEX
 //#define TEST_QUEUE_PUSH_AND_POP
 //#define TEST_CHECK_CRC
-#define TEST_FLASH_WRITE
+//#define TEST_FLASH_WRITE
 #endif
 
 /** @defgroup FIFO Configurations
@@ -304,7 +304,7 @@ void* Application_DataLogging(void *arg)
             }
             if ((packageCount % 16) == 0)
             {
-                printfFlashMem(sectorCount, sectorCount + 2);
+                FlashSim_ShowSector(sectorCount, sectorCount + 2);
                 sectorCount = (sectorCount + 2) % (LOG_REGION_SECTOR_COUNT);
             }
 #endif
@@ -318,6 +318,7 @@ void* Application_DataLogging(void *arg)
 void assert_failed(uint8_t* file, uint32_t line)
 {
     printf("Wrong parameters passed at file %s, line %d", file,line);
+    return;
 }
 /******************************************************************************
  * EOF
